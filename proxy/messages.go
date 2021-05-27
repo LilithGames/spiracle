@@ -12,7 +12,7 @@ type Msgs = []ipv4.Message
 
 type UdpMsg struct {
 	Buffer []byte
-	Addr   net.Addr
+	Addr   *net.UDPAddr
 }
 
 func (it *UdpMsg) Drop(pool *Pool) {

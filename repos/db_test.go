@@ -1,7 +1,9 @@
-package cache
+package repos
 
 import (
+	"fmt"
 	"log"
+	"net"
 	"sync"
 	"testing"
 
@@ -45,15 +47,18 @@ func TestOlric(t *testing.T) {
 	db2 := serve(c2, wg)
 	wg.Wait()
 
+	addr, _ := net.ResolveUDPAddr("udp4", "127.0.0.1:8454")
 	items1, err := db1.NewDMap("items")
 	assert.Nil(t, err)
-	err = items1.Put("name", "hulucc")
+	err = items1.Put("name", addr)
+	assert.Nil(t, err)
 
 	items2, err := db2.NewDMap("items")
 	assert.Nil(t, err)
 	v, err := items2.Get("name")
 	assert.Nil(t, err)
-	assert.Equal(t, "hulucc", v)
+	fmt.Printf("%#v\n", v.(net.Addr))
+	// assert.Equal(t, "hulucc", v)
 }
 
 func BenchmarkDB(b *testing.B) {

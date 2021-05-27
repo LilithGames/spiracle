@@ -1,0 +1,6 @@
+roomproxy:
+  servers:
+    - name: dev
+      port: 4000
+    - name: alpha
+      port: 5000

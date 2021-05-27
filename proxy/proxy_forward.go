@@ -4,7 +4,7 @@ import (
 	"net"
 )
 
-func Forward(addr net.Addr) ProxyHandler {
+func Forward(addr *net.UDPAddr) ProxyHandler {
 	return func(ctx *ProxyContext, pes *ProxyEndpoints) error {
 		for {
 			select {

@@ -21,7 +21,7 @@ func BenchRecv() ProxyHandler {
 	}
 }
 
-func BenchSend(target net.Addr) ProxyHandler {
+func BenchSend(target *net.UDPAddr) ProxyHandler {
 	return func(ctx *ProxyContext, pes *ProxyEndpoints) error {
 		s := GetStatd(ctx.Context)
 		for {

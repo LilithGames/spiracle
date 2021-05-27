@@ -101,7 +101,7 @@ func (it *conn) RunReadLoop(ctx context.Context) error {
 			log.Fatalf("conn read loop err: %v\n", err)
 		}
 		for i := 0; i < n; i++ {
-			msg := Msg{Buffer: msgs[i].Buffers[0][:msgs[i].N], Addr: msgs[i].Addr}
+			msg := Msg{Buffer: msgs[i].Buffers[0][:msgs[i].N], Addr: msgs[i].Addr.(*net.UDPAddr)}
 			select {
 			case it.rch <- &msg:
 			case <-ctx.Done():
