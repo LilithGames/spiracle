@@ -7,46 +7,64 @@ import (
 	"net"
 	"time"
 
-	"github.com/LilithGames/spiracle/config"
 	"github.com/LilithGames/spiracle/protocol"
 	"github.com/LilithGames/spiracle/protocol/heartbeat"
 	"github.com/LilithGames/spiracle/protocol/kcp"
 	"github.com/LilithGames/spiracle/protocol/multiplex"
 	"github.com/LilithGames/spiracle/proxy"
 	"github.com/LilithGames/spiracle/repos"
+	"github.com/LilithGames/spiracle/infra/db"
 	"github.com/buraksezer/olric"
 )
 
 type RoomProxy struct {
+	*roomProxyOptions
 	ctx       context.Context
 	name      string
-	conf      *config.Config
-	session   repos.SessionRepo
-	router    repos.RouterRepo
 	kcp       protocol.Parser
 	multiplex protocol.Parser
 	heartbeat protocol.Parser
-	expire    time.Duration
 }
 
-func NewRoomProxy(ctx context.Context, conf *config.Config, name string, router repos.RouterRepo, db *olric.Olric) (*RoomProxy, error) {
-	session, err := repos.NewSessionRepo(fmt.Sprintf("roomproxy.%s", name), db)
-	if err != nil {
-		return nil, fmt.Errorf("NewRoomProxy pstream NewSessionRepo err: %w", err)
+type roomProxyOptions struct {
+	expire    time.Duration
+	session   repos.SessionRepo
+	router    repos.RouterRepo
+	db        *olric.Olric
+}
+
+func (it *RoomProxy) Routers() repos.RouterRepo {
+	return it.router
+}
+
+func NewRoomProxy(ctx context.Context, name string, opts ...RoomProxyOption) (*RoomProxy, error) {
+	o := getRoomProxyOptions(opts...)
+	var err error
+	if o.db == nil {
+		o.db, err = db.ProvideLocal(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("NewRoomProxy db.ProvideLocal err: %w", err)
+		}
 	}
-	if err != nil {
-		return nil, err
+	if o.session == nil {
+		o.session, err = repos.NewSessionRepo(fmt.Sprintf("roomproxy.%s", name), o.db)
+		if err != nil {
+			return nil, fmt.Errorf("NewRoomProxy NewSessionRepo err: %w", err)
+		}
+	}
+	if o.router == nil {
+		o.router, err = repos.NewRouterRepo(fmt.Sprintf("roomproxy.%s", name), o.db)
+		if err != nil {
+			return nil, fmt.Errorf("NewRoomProxy NewRouterRepo err: %w", err)
+		}
 	}
 	rp := &RoomProxy{
+		roomProxyOptions: o,
 		ctx:       ctx,
 		name:      name,
-		conf:      conf,
-		session:   session,
-		router:    router,
 		kcp:       protocol.NewFuncParser(kcp.Parser()),
 		multiplex: protocol.NewFuncParser(multiplex.Parser()),
 		heartbeat: protocol.NewFuncParser(heartbeat.Parser()),
-		expire:    time.Second * 30,
 	}
 	return rp, nil
 }
@@ -114,24 +132,57 @@ func (it *RoomProxy) uroute(m *proxy.UdpMsg) error {
 }
 
 func (it *RoomProxy) Run(ctx *proxy.ProxyContext, pes *proxy.ProxyEndpoints) error {
+	s := proxy.GetStatd(ctx.Context)
 	for {
 		select {
 		case m := <-pes.Downstream.Rx():
+			s.DRx().Incr(len(m.Buffer))
 			err := it.droute(m)
 			if err != nil {
+				s.DDrop().Incr(len(m.Buffer))
 				m.Drop(ctx.BufferPool)
 				continue
 			}
 			pes.Upstream.Tx() <- m
+			s.DTx().Incr(len(m.Buffer))
 		case m := <-pes.Upstream.Rx():
+			s.URx().Incr(len(m.Buffer))
 			err := it.uroute(m)
 			if err != nil {
+				s.UDrop().Incr(len(m.Buffer))
 				m.Drop(ctx.BufferPool)
 				continue
 			}
 			pes.Downstream.Tx() <- m
+			s.UTx().Incr(len(m.Buffer))
 		case <-ctx.Done():
 			return ctx.Err()
 		}
 	}
 }
+
+type RoomProxyOption interface {
+	apply(*roomProxyOptions)
+}
+
+type funcRoomProxyOption struct {
+	f func(*roomProxyOptions)
+}
+
+func (it *funcRoomProxyOption) apply(o *roomProxyOptions) {
+	it.f(o)
+}
+
+func newFuncRoomProxyOption(f func(*roomProxyOptions)) RoomProxyOption {
+	return &funcRoomProxyOption{f: f}
+}
+func getRoomProxyOptions(opts ...RoomProxyOption) *roomProxyOptions {
+	o := &roomProxyOptions{
+		expire: time.Second*30,
+	}
+	for _, opt := range opts {
+		opt.apply(o)
+	}
+	return o
+}
+

@@ -10,9 +10,7 @@ func BenchRecv() ProxyHandler {
 		for {
 			select {
 			case msg := <-pes.Downstream.Rx():
-				if s != nil {
-					s.DRx.Incr(len(msg.Buffer))
-				}
+				s.DRx().Incr(len(msg.Buffer))
 				msg.Drop(ctx.BufferPool)
 			case <-ctx.Done():
 				return ctx.Err()
@@ -30,7 +28,7 @@ func BenchSend(target *net.UDPAddr) ProxyHandler {
 			select {
 			case pes.Upstream.Tx() <- msg:
 				if s != nil {
-					s.UTx.Incr(1)
+					s.UTx().Incr(1)
 				}
 			case <-ctx.Done():
 				return ctx.Err()

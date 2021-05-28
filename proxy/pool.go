@@ -24,15 +24,11 @@ func NewBufferPool(ctx context.Context, mtu int) *Pool {
 }
 
 func (it *DefaultPool) Get() interface{} {
-	if it.Statd != nil {
-		it.Statd.Pool.Get()
-	}
+	it.Statd.Pool().Get()
 	return it.Pool.Get()
 }
 
 func (it *DefaultPool) Put(x interface{}) {
-	if it.Statd != nil {
-		it.Statd.Pool.Put()
-	}
+	it.Statd.Pool().Put()
 	it.Pool.Put(x)
 }

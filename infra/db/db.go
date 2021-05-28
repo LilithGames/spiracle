@@ -17,7 +17,7 @@ func ProvideLocal(ctx context.Context) (*olric.Olric, error) {
 	c.MemberlistConfig.BindAddr = "127.0.0.1"
 	c.Started = func() {
 		defer close(ready)
-		log.Println("Olric is ready to accept connections")
+		log.Println("[INFO] Olric is ready to accept connections")
 	}
 	db, err := olric.New(c)
 	if err != nil {

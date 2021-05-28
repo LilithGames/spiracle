@@ -99,11 +99,11 @@ func (it *Server) Run(ctx context.Context) error {
 		s.Worker = it.n
 		for {
 			for i := 0; i < it.n; i++ {
-				(&s.URxch[i]).Set(len(urx[i]))
-				(&s.DRxch[i]).Set(len(drx[i]))
+				s.URxch(i).Set(len(urx[i]))
+				s.DRxch(i).Set(len(drx[i]))
 			}
-			(&s.UTxch[0]).Set(len(utx))
-			(&s.DTxch[0]).Set(len(dtx))
+			s.UTxch(0).Set(len(utx))
+			s.DTxch(0).Set(len(dtx))
 			if ctx.Err() != nil {
 				return
 			}
@@ -112,6 +112,7 @@ func (it *Server) Run(ctx context.Context) error {
 	}
 	go report(ctx)
 
+	log.Println("[INFO] Proxy server is ready to accept packets.")
 	<-ctx.Done()
 	return ctx.Err()
 }
