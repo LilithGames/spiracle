@@ -1,0 +1,30 @@
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate
+  failurePolicy: Fail
+  name: roomingress-webhook.projectdavinci.com
+  rules:
+  - apiGroups:
+    - projectdavinci.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    - patch
+    - DELETE
+    resources:
+    - roomingresses
+  sideEffects: None

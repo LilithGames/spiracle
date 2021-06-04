@@ -1,0 +1,76 @@
+package v1
+
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+//+kubebuilder:rbac:groups=projectdavinci.com,resources=roomingresses,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=projectdavinci.com,resources=roomingresses/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=projectdavinci.com,resources=roomingresses/finalizers,verbs=update
+//+kubebuilder:webhook:path=/mutate,mutating=true,failurePolicy=fail,groups=projectdavinci.com,resources=roomingresses,verbs=create;update;patch;delete,versions=v1,name=roomingress-webhook.projectdavinci.com,sideEffects=None,admissionReviewVersions=v1
+
+func init() {
+	SchemeBuilder.Register(&RoomIngress{}, &RoomIngressList{})
+}
+
+type RoomIngressPlayer struct {
+	//+kubebuilder:validation:MinLength=1
+	Id    string `json:"id"`
+	//+kubebuilder:validation:Minimum=1
+	//+kubebuilder:validation:Maximum=4294967295
+	Token int64 `json:"token"`
+}
+
+type RoomIngressRoom struct {
+	//+kubebuilder:validation:MinLength=1
+	Id       string `json:"id,omitempty"`
+	//+kubebuilder:validation:MinLength=1
+	Server   string `json:"server,omitempty"`
+	//+kubebuilder:validation:MinLength=1
+	Upstream string `json:"upstream,omitempty"`
+	//+kubebuilder:validation:UniqueItems=true
+	Players  []RoomIngressPlayer `json:"players"`
+}
+
+type RoomIngressSpec struct {
+	//+kubebuilder:validation:MinItems=1
+	//+kubebuilder:validation:UniqueItems=true
+	Rooms []RoomIngressRoom `json:"rooms,omitempty"`
+}
+
+type RoomIngressPlayerStatus struct {
+	Id    string `json:"id"`
+	//+kubebuilder:validation:Minimum=1
+	//+kubebuilder:validation:Maximum=4294967295
+	Token int64 `json:"token"`
+}
+
+type RoomIngressRoomStatus struct {
+	Id      string `json:"id,omitempty"`
+	Server   string `json:"server,omitempty"`
+	Upstream string `json:"upstream,omitempty"`
+	Players []RoomIngressPlayerStatus `json:"players,omitempty"`
+}
+
+type RoomIngressStatus struct {
+	Rooms []RoomIngressRoomStatus `json:"rooms,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Server",type=string,JSONPath=`.spec.rules[0].server`
+//+kubebuilder:resource:shortName="ring"
+type RoomIngress struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   RoomIngressSpec   `json:"spec,omitempty"`
+	Status RoomIngressStatus `json:"status,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+type RoomIngressList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []RoomIngress `json:"items"`
+}

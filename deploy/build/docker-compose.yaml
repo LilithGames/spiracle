@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  spiracle:
+    build:
+      context: ../..
+      dockerfile: deploy/build/Dockerfile
+    image: spiracle:latest

@@ -1,82 +1,62 @@
 package repos
 
 import (
+	"errors"
 	"net"
-
-	"github.com/buraksezer/olric"
-	"github.com/buraksezer/olric/query"
 )
 
 type TToken = uint32
 
+var ErrAlreadyExists = errors.New("elements already exists")
+var ErrNotExists = errors.New("elements not exists")
+
 type RouterRecord struct {
-	Token  TToken
-	Addr   *net.UDPAddr
-	RoomId string
+	Token    TToken
+	Addr     *net.UDPAddr
+	RoomId   string
+	PlayerId string
 }
 
 type RouterRepo interface {
-	Create(record *RouterRecord) error
-	Update(record *RouterRecord) error
-	CreateOrUpdate(record *RouterRecord) error
-	Delete(token TToken) error
-	Get(token TToken) (*RouterRecord, error)
-	List(f func(*RouterRecord) bool) error
+	Create(record *RouterRecord, opts ...RouterOption) error
+	Update(record *RouterRecord, opts ...RouterOption) error
+	CreateOrUpdate(record *RouterRecord, opts ...RouterOption) error
+	Delete(token TToken, opts ...RouterOption) error
+	Get(token TToken, opts ...RouterOption) (*RouterRecord, error)
+	List(f func(*RouterRecord) bool, opts ...RouterOption) error
 }
 
-type routerRepo struct {
-	name string
-	db   *olric.Olric
-	dmap *olric.DMap
+type routerOptions struct {
+	scope string
 }
 
-func NewRouterRepo(scope string, db *olric.Olric) (RouterRepo, error) {
-	if scope == "" {
-		scope = "$global"
+type RouterOption interface {
+	apply(*routerOptions)
+}
+
+type funcRouterOption struct {
+	f func(*routerOptions)
+}
+
+func (it *funcRouterOption) apply(o *routerOptions) {
+	it.f(o)
+}
+
+func newFuncRouterOption(f func(*routerOptions)) RouterOption {
+	return &funcRouterOption{f: f}
+}
+func getRouterOptions(opts ...RouterOption) *routerOptions {
+	o := &routerOptions{
+		scope: "$global",
 	}
-	name := "storage." + scope + ".router"
-	dmap, err := db.NewDMap(name)
-	if err != nil {
-		return nil, err
+	for _, opt := range opts {
+		opt.apply(o)
 	}
-	return &routerRepo{
-		name: name,
-		dmap: dmap,
-		db:   db,
-	}, nil
+	return o
 }
 
-func (it *routerRepo) Create(record *RouterRecord) error {
-	return it.dmap.PutIf(str(record.Token), record, olric.IfNotFound)
-}
-
-func (it *routerRepo) Update(record *RouterRecord) error {
-	return it.dmap.PutIf(str(record.Token), record, olric.IfFound)
-}
-
-func (it *routerRepo) CreateOrUpdate(record *RouterRecord) error {
-	return it.dmap.Put(str(record.Token), record)
-}
-
-func (it *routerRepo) Delete(token TToken) error {
-	return it.dmap.Delete(str(token))
-}
-
-func (it *routerRepo) Get(token TToken) (*RouterRecord, error) {
-	r, err := it.dmap.Get(str(token))
-	if err != nil {
-		return nil, err
-	}
-	return r.(*RouterRecord), nil
-}
-
-func (it *routerRepo) List(f func(*RouterRecord) bool) error {
-	cur, err := it.dmap.Query(query.M{"$onKey": query.M{"$regexMatch": ""}})
-	if err != nil {
-		return err
-	}
-	defer cur.Close()
-	return cur.Range(func(key string, value interface{}) bool {
-		return f(value.(*RouterRecord))
+func RouterScope(scope string) RouterOption {
+	return newFuncRouterOption(func(o *routerOptions) {
+		o.scope = scope
 	})
 }

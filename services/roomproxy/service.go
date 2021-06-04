@@ -41,7 +41,7 @@ func NewRoomProxy(ctx context.Context, name string, opts ...RoomProxyOption) (*R
 	o := getRoomProxyOptions(opts...)
 	var err error
 	if o.db == nil {
-		o.db, err = db.ProvideLocal(ctx)
+		o.db, err = db.ProvideServer(ctx, db.ServerLocalConfig())
 		if err != nil {
 			return nil, fmt.Errorf("NewRoomProxy db.ProvideLocal err: %w", err)
 		}
@@ -53,7 +53,7 @@ func NewRoomProxy(ctx context.Context, name string, opts ...RoomProxyOption) (*R
 		}
 	}
 	if o.router == nil {
-		o.router, err = repos.NewRouterRepo(fmt.Sprintf("roomproxy.%s", name), o.db)
+		o.router, err = repos.NewRouterRepo(o.db)
 		if err != nil {
 			return nil, fmt.Errorf("NewRoomProxy NewRouterRepo err: %w", err)
 		}
@@ -186,3 +186,26 @@ func getRoomProxyOptions(opts ...RoomProxyOption) *roomProxyOptions {
 	return o
 }
 
+func RoomProxyExpire(expire time.Duration) RoomProxyOption {
+	return newFuncRoomProxyOption(func(o *roomProxyOptions) {
+		o.expire = expire
+	})
+}
+
+func RoomProxyDb(db *olric.Olric) RoomProxyOption {
+	return newFuncRoomProxyOption(func(o *roomProxyOptions) {
+		o.db = db
+	})
+}
+
+func RoomProxySessionRepo(session repos.SessionRepo) RoomProxyOption {
+	return newFuncRoomProxyOption(func(o *roomProxyOptions) {
+		o.session = session
+	})
+}
+
+func RoomProxyRouterRepo(router repos.RouterRepo) RoomProxyOption {
+	return newFuncRoomProxyOption(func(o *roomProxyOptions) {
+		o.router = router
+	})
+}

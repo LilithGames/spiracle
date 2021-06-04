@@ -1,0 +1,7 @@
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room1
+  namespace: default
+spec: {}
+status: {}

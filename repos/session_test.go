@@ -13,17 +13,17 @@ import (
 
 func TestSession(t *testing.T) {
 	ctx := context.TODO()
-	db, err := db.ProvideLocal(ctx)
+	db, err := db.ProvideServer(ctx, db.ServerLocalConfig())
 	assert.Nil(t, err)
 	defer db.Shutdown(ctx)
 	sr, err := NewSessionRepo("server1", db)
 	assert.Nil(t, err)
 	addr, _ := net.ResolveUDPAddr("udp4", "127.0.0.1:1234")
-	err = sr.Create(&Session{Id: "hulucc", Addr: addr})
+	err = sr.Create(&Session{Token: 0x01, Src: addr})
 	assert.Nil(t, err)
-	s, err := sr.Get("hulucc")
+	s, err := sr.Get(0x01)
 	assert.Nil(t, err)
-	assert.Equal(t, addr, s.Addr)
-	_, err = sr.Get("hulucc1")
+	assert.Equal(t, addr, s.Src)
+	_, err = sr.Get(0x01)
 	assert.True(t, errors.Is(err, ErrKeyNotFound))
 }
