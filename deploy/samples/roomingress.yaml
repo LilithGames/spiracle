@@ -4,12 +4,12 @@ metadata:
   name: room1
   namespace: default
 spec:
-  rules:
-    - server: local
+  rooms:
+    - id: room1
+      server: local
       upstream: 127.0.0.1:9200
       players:
-        - token: 3
-        - token: 4
-status:
-  proxy:
-    addr: 127.0.0.1:4321
+        - id: player1
+          token: 0
+        - id: player2
+          token: 4

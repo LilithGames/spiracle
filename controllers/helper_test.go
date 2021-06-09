@@ -44,6 +44,6 @@ func TestDiffRoomStatus(t *testing.T) {
 			},
 		},
 	}
-	r := DiffRoomStatus(a, b)
+	r := DiffRoomStatus(&a, &b)
 	assert.Equal(t, 5, len(r))
 }

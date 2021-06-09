@@ -16,6 +16,8 @@ func Parser() protocol.FuncParserHandler {
 		switch b {
 		case 0x01:
 			fallthrough
+		case 'e':
+			fallthrough
 		case 'x':
 			return b, nil
 		default:

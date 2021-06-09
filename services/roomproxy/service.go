@@ -2,18 +2,16 @@ package roomproxy
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net"
 	"time"
 
+	"github.com/LilithGames/spiracle/infra/db"
 	"github.com/LilithGames/spiracle/protocol"
 	"github.com/LilithGames/spiracle/protocol/heartbeat"
 	"github.com/LilithGames/spiracle/protocol/kcp"
 	"github.com/LilithGames/spiracle/protocol/multiplex"
 	"github.com/LilithGames/spiracle/proxy"
 	"github.com/LilithGames/spiracle/repos"
-	"github.com/LilithGames/spiracle/infra/db"
 	"github.com/buraksezer/olric"
 )
 
@@ -27,10 +25,10 @@ type RoomProxy struct {
 }
 
 type roomProxyOptions struct {
-	expire    time.Duration
-	session   repos.SessionRepo
-	router    repos.RouterRepo
-	db        *olric.Olric
+	expire  time.Duration
+	session repos.SessionRepo
+	router  repos.RouterRepo
+	db      *olric.Olric
 }
 
 func (it *RoomProxy) Routers() repos.RouterRepo {
@@ -60,75 +58,13 @@ func NewRoomProxy(ctx context.Context, name string, opts ...RoomProxyOption) (*R
 	}
 	rp := &RoomProxy{
 		roomProxyOptions: o,
-		ctx:       ctx,
-		name:      name,
-		kcp:       protocol.NewFuncParser(kcp.Parser()),
-		multiplex: protocol.NewFuncParser(multiplex.Parser()),
-		heartbeat: protocol.NewFuncParser(heartbeat.Parser()),
+		ctx:              ctx,
+		name:             name,
+		kcp:              protocol.NewFuncParser(kcp.Parser()),
+		multiplex:        protocol.NewFuncParser(multiplex.Parser()),
+		heartbeat:        protocol.NewFuncParser(heartbeat.Parser()),
 	}
 	return rp, nil
-}
-
-func (it *RoomProxy) token(buffer []byte) (uint32, error) {
-	ch, err := it.multiplex.GetToken(buffer)
-	if err != nil {
-		return 0, err
-	}
-	switch ch.(byte) {
-	case 0x01:
-		token, err := it.kcp.GetToken(buffer[1:])
-		if err != nil {
-			return 0, err
-		}
-		return token.(uint32), nil
-	case 'x':
-		token, err := it.heartbeat.GetToken(buffer[1:])
-		if err != nil {
-			return 0, err
-		}
-		return token.(uint32), nil
-	default:
-		return 0, errors.New("unknown channel")
-	}
-}
-
-func (it *RoomProxy) droute(m *proxy.UdpMsg) error {
-	src := m.Addr
-	var dst *net.UDPAddr
-	token, err := it.token(m.Buffer)
-	if err != nil {
-		// log
-		return err
-	}
-	s, err := it.session.Get(token)
-	if err != nil {
-		// warning if !errors.Is(err, repos.ErrKeyNotFound)
-		record, err := it.router.Get(token)
-		if err != nil {
-			// log
-			return err
-		}
-		dst = record.Addr
-		// warning
-		it.session.CreateOrUpdate(&repos.Session{Token: token, Src: src, Dst: dst}, repos.Expire(it.expire))
-	} else {
-		dst = s.Dst
-	}
-	m.Addr = dst
-	return nil
-}
-
-func (it *RoomProxy) uroute(m *proxy.UdpMsg) error {
-	token, err := it.token(m.Buffer)
-	if err != nil {
-		return err
-	}
-	s, err := it.session.Get(token)
-	if err != nil {
-		return err
-	}
-	m.Addr = s.Src
-	return nil
 }
 
 func (it *RoomProxy) Run(ctx *proxy.ProxyContext, pes *proxy.ProxyEndpoints) error {
@@ -137,7 +73,8 @@ func (it *RoomProxy) Run(ctx *proxy.ProxyContext, pes *proxy.ProxyEndpoints) err
 		select {
 		case m := <-pes.Downstream.Rx():
 			s.DRx().Incr(len(m.Buffer))
-			err := it.droute(m)
+			ph := it.multiplexing(m.Buffer)
+			err := ph.d(ph.ch, m)
 			if err != nil {
 				s.DDrop().Incr(len(m.Buffer))
 				m.Drop(ctx.BufferPool)
@@ -147,7 +84,8 @@ func (it *RoomProxy) Run(ctx *proxy.ProxyContext, pes *proxy.ProxyEndpoints) err
 			s.DTx().Incr(len(m.Buffer))
 		case m := <-pes.Upstream.Rx():
 			s.URx().Incr(len(m.Buffer))
-			err := it.uroute(m)
+			ph := it.multiplexing(m.Buffer)
+			err := ph.u(ph.ch, m)
 			if err != nil {
 				s.UDrop().Incr(len(m.Buffer))
 				m.Drop(ctx.BufferPool)
@@ -178,7 +116,7 @@ func newFuncRoomProxyOption(f func(*roomProxyOptions)) RoomProxyOption {
 }
 func getRoomProxyOptions(opts ...RoomProxyOption) *roomProxyOptions {
 	o := &roomProxyOptions{
-		expire: time.Second*30,
+		expire: time.Second * 30,
 	}
 	for _, opt := range opts {
 		opt.apply(o)

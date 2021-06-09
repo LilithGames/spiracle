@@ -15,41 +15,52 @@ func init() {
 
 type RoomIngressPlayer struct {
 	//+kubebuilder:validation:MinLength=1
-	Id    string `json:"id"`
-	//+kubebuilder:validation:Minimum=1
+	Id string `json:"id"`
+	//+kubebuilder:validation:Minimum=0
 	//+kubebuilder:validation:Maximum=4294967295
 	Token int64 `json:"token"`
 }
 
 type RoomIngressRoom struct {
 	//+kubebuilder:validation:MinLength=1
-	Id       string `json:"id,omitempty"`
+	Id string `json:"id,omitempty"`
 	//+kubebuilder:validation:MinLength=1
-	Server   string `json:"server,omitempty"`
+	Server string `json:"server,omitempty"`
 	//+kubebuilder:validation:MinLength=1
-	Upstream string `json:"upstream,omitempty"`
-	//+kubebuilder:validation:UniqueItems=true
+	Upstream string              `json:"upstream,omitempty"`
 	Players  []RoomIngressPlayer `json:"players"`
 }
 
 type RoomIngressSpec struct {
 	//+kubebuilder:validation:MinItems=1
-	//+kubebuilder:validation:UniqueItems=true
 	Rooms []RoomIngressRoom `json:"rooms,omitempty"`
 }
 
+// +kubebuilder:validation:Enum=Success;Pending;Failure;Expired;Retry
+type PlayerStatus string
+
+const PlayerStatusSuccess PlayerStatus = "Success"
+const PlayerStatusPending PlayerStatus = "Pending"
+const PlayerStatusFailure PlayerStatus = "Failure"
+const PlayerStatusExpired PlayerStatus = "Expired"
+const PlayerStatusRetry   PlayerStatus = "Retry"
+
 type RoomIngressPlayerStatus struct {
-	Id    string `json:"id"`
-	//+kubebuilder:validation:Minimum=1
+	Id string `json:"id"`
+	//+kubebuilder:validation:Minimum=0
 	//+kubebuilder:validation:Maximum=4294967295
-	Token int64 `json:"token"`
+	Token     int64        `json:"token"`
+	Timestamp metav1.Time  `json:"timestamp"`
+	Expire    metav1.Time  `json:"expire"`
+	Status    PlayerStatus `json:"status"`
+	Detail    string       `json:"detail"`
 }
 
 type RoomIngressRoomStatus struct {
-	Id      string `json:"id,omitempty"`
-	Server   string `json:"server,omitempty"`
-	Upstream string `json:"upstream,omitempty"`
-	Players []RoomIngressPlayerStatus `json:"players,omitempty"`
+	Id       string                    `json:"id,omitempty"`
+	Server   string                    `json:"server,omitempty"`
+	Upstream string                    `json:"upstream,omitempty"`
+	Players  []RoomIngressPlayerStatus `json:"players,omitempty"`
 }
 
 type RoomIngressStatus struct {
@@ -58,7 +69,7 @@ type RoomIngressStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Server",type=string,JSONPath=`.spec.rules[0].server`
+//+kubebuilder:printcolumn:name="Server",type=string,JSONPath=`.spec.rooms[0].server`
 //+kubebuilder:resource:shortName="ring"
 type RoomIngress struct {
 	metav1.TypeMeta   `json:",inline"`

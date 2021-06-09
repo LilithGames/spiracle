@@ -2,17 +2,39 @@ package controllers
 
 import v1 "github.com/LilithGames/spiracle/api/v1"
 
-func GetPlayerStatus(player v1.RoomIngressPlayer) v1.RoomIngressPlayerStatus {
-	return v1.RoomIngressPlayerStatus{
-		Id:    player.Id,
-		Token: player.Token,
+func GetPlayerStatus(player v1.RoomIngressPlayer, base *v1.RoomIngressPlayerStatus) v1.RoomIngressPlayerStatus {
+	s := v1.RoomIngressPlayerStatus{
+		Id: player.Id,
 	}
+	if base == nil {
+		s.Token = player.Token
+		s.Status = v1.PlayerStatusPending
+	} else {
+		if player.Token != int64(0) {
+			s.Token = player.Token
+		} else {
+			s.Token = base.Token
+		}
+		s.Status = base.Status
+		s.Detail = base.Detail
+		s.Timestamp = base.Timestamp
+		s.Expire = base.Expire
+	}
+	return s
 }
 
-func GetRoomStatus(room v1.RoomIngressRoom) v1.RoomIngressRoomStatus {
+func GetRoomStatus(room v1.RoomIngressRoom, base *v1.RoomIngressRoomStatus) v1.RoomIngressRoomStatus {
 	players := make([]v1.RoomIngressPlayerStatus, len(room.Players))
+	dict := make(map[string]*v1.RoomIngressPlayerStatus)
+	if base != nil {
+		for i := range base.Players {
+			player := &base.Players[i]
+			dict[player.Id] = player
+		}
+	}
 	for i := range room.Players {
-		players[i] = GetPlayerStatus(room.Players[i])
+		pbase, _ := dict[room.Players[i].Id]
+		players[i] = GetPlayerStatus(room.Players[i], pbase)
 	}
 	return v1.RoomIngressRoomStatus{
 		Id:       room.Id,
@@ -22,12 +44,20 @@ func GetRoomStatus(room v1.RoomIngressRoom) v1.RoomIngressRoomStatus {
 	}
 }
 
-func GetStatus(spec v1.RoomIngressSpec) v1.RoomIngressStatus {
+func GetStatus(spec *v1.RoomIngressSpec, base *v1.RoomIngressStatus) *v1.RoomIngressStatus {
 	rooms := make([]v1.RoomIngressRoomStatus, len(spec.Rooms))
-	for i := range spec.Rooms {
-		rooms[i] = GetRoomStatus(spec.Rooms[i])
+	dict := make(map[string]*v1.RoomIngressRoomStatus)
+	if base != nil {
+		for i := range base.Rooms {
+			room := &base.Rooms[i]
+			dict[room.Id] = room
+		}
 	}
-	return v1.RoomIngressStatus{Rooms: rooms}
+	for i := range spec.Rooms {
+		rbase, _ := dict[spec.Rooms[i].Id]
+		rooms[i] = GetRoomStatus(spec.Rooms[i], rbase)
+	}
+	return &v1.RoomIngressStatus{Rooms: rooms}
 }
 
 type DiffType string
@@ -35,6 +65,7 @@ type DiffType string
 const DiffNew = "New"
 const DiffUpdated = "Updated"
 const DiffDeleted = "Deleted"
+const DiffUnchanged = "Unchanged"
 
 type PlayerKey struct {
 	RoomId   string
@@ -46,6 +77,11 @@ type PlayerPos struct {
 	PlayerIndex int
 }
 
+type PlayerDetail struct {
+	Room   *v1.RoomIngressRoomStatus
+	Player *v1.RoomIngressPlayerStatus
+}
+
 var NilPos = PlayerPos{RoomIndex: -1, PlayerIndex: -1}
 
 type DiffResult struct {
@@ -55,7 +91,7 @@ type DiffResult struct {
 	Current PlayerPos
 }
 
-func GetPlayerStatusDict(s v1.RoomIngressStatus) map[PlayerKey]PlayerPos {
+func GetPlayerStatusDict(s *v1.RoomIngressStatus) map[PlayerKey]PlayerPos {
 	r := make(map[PlayerKey]PlayerPos)
 	for i := range s.Rooms {
 		room := &s.Rooms[i]
@@ -91,11 +127,28 @@ func UnionPlayerKeys(a map[PlayerKey]PlayerPos, b map[PlayerKey]PlayerPos) []Pla
 	return r
 }
 
-func GetPlayerStatusByPos(s v1.RoomIngressStatus, pos PlayerPos) v1.RoomIngressPlayerStatus {
-	return s.Rooms[pos.RoomIndex].Players[pos.PlayerIndex]
+func GetPlayerStatusByPos(s *v1.RoomIngressStatus, pos PlayerPos) PlayerDetail {
+	room := &s.Rooms[pos.RoomIndex]
+	player := &room.Players[pos.PlayerIndex]
+	return PlayerDetail{Room: room, Player: player}
 }
 
-func DiffRoomStatus(past v1.RoomIngressStatus, curr v1.RoomIngressStatus, opts ...DiffOption) []DiffResult {
+func GetPlayerStatusByKey(s *v1.RoomIngressStatus, key PlayerKey) *PlayerDetail {
+	for i := range s.Rooms {
+		room := &s.Rooms[i]
+		if room.Id == key.RoomId {
+			for j := range room.Players {
+				player := &room.Players[j]
+				if player.Id == key.PlayerId {
+					return &PlayerDetail{Room: room, Player: player}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func DiffRoomStatus(past *v1.RoomIngressStatus, curr *v1.RoomIngressStatus, opts ...DiffOption) []DiffResult {
 	o := getDiffOptions(opts...)
 	pastd := GetPlayerStatusDict(past)
 	currd := GetPlayerStatusDict(curr)
@@ -115,11 +168,11 @@ func DiffRoomStatus(past v1.RoomIngressStatus, curr v1.RoomIngressStatus, opts .
 		} else if cok && pok {
 			if o.uh(past, p, curr, c) {
 				diff.Type = DiffUpdated
-				diff.Current = c
-				diff.Past = p
 			} else {
-				continue
+				diff.Type = DiffUnchanged
 			}
+			diff.Current = c
+			diff.Past = p
 		} else if !cok && pok {
 			diff.Type = DiffDeleted
 			diff.Past = p
@@ -132,14 +185,23 @@ func DiffRoomStatus(past v1.RoomIngressStatus, curr v1.RoomIngressStatus, opts .
 }
 
 func TokenUpdatedHandler() UpdatedHandler {
-	return func(past v1.RoomIngressStatus, pp PlayerPos, curr v1.RoomIngressStatus, cp PlayerPos) bool {
-		pps := GetPlayerStatusByPos(past, pp)
-		cps := GetPlayerStatusByPos(curr, cp)
-		return pps.Token != cps.Token
+	return func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) bool {
+		p := GetPlayerStatusByPos(past, pp)
+		c := GetPlayerStatusByPos(curr, cp)
+		if c.Player.Status == v1.PlayerStatusRetry {
+			return true
+		}
+		return p.Player.Token != c.Player.Token
 	}
 }
 
-type UpdatedHandler func(past v1.RoomIngressStatus, pp PlayerPos, curr v1.RoomIngressStatus, cp PlayerPos) bool
+func AlwaysUpdatedHandler() UpdatedHandler {
+	return func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) bool {
+		return true
+	}
+}
+
+type UpdatedHandler func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) bool
 
 type diffOptions struct {
 	uh UpdatedHandler
@@ -168,4 +230,10 @@ func getDiffOptions(opts ...DiffOption) *diffOptions {
 		opt.apply(o)
 	}
 	return o
+}
+
+func DiffUpdater(uh UpdatedHandler) DiffOption {
+	return newFuncDiffOption(func(o *diffOptions) {
+		o.uh = uh
+	})
 }

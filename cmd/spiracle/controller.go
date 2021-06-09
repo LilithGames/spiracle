@@ -14,10 +14,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	manager "sigs.k8s.io/controller-runtime/pkg/manager"
 
 	v1 "github.com/LilithGames/spiracle/api/v1"
 	"github.com/LilithGames/spiracle/controllers"
-	"github.com/LilithGames/spiracle/infra/db"
 	"github.com/LilithGames/spiracle/repos"
 	//+kubebuilder:scaffold:imports
 )
@@ -34,18 +34,12 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-func controller(ctx context.Context) {
+func controller(ctx context.Context) manager.Manager {
 	metricsAddr := ":8080"
 	enableLeaderElection := true
 	probeAddr := ":8081"
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{})))
-
-	client, err := db.ProvideClient(ctx, db.ClientLocalConfig())
-	if err != nil {
-		setupLog.Error(err, "unable to connect local db")
-		os.Exit(1)
-	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -60,10 +54,10 @@ func controller(ctx context.Context) {
 		os.Exit(1)
 	}
 	reconciler := &controllers.RoomIngressReconciler{
-		Client:  mgr.GetClient(),
-		Scheme:  mgr.GetScheme(),
-		Log:     ctrl.Log,
-		Routers: repos.NewClientRouterRepo(client),
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		Log:       ctrl.Log,
+		TokenRepo: repos.NewTsTokenRepo(),
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RoomIngress")
@@ -79,8 +73,6 @@ func controller(ctx context.Context) {
 		os.Exit(1)
 	}
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctx); err != nil {
-		setupLog.Error(err, "problem running manager")
-		os.Exit(1)
-	}
+	mgr.GetFieldIndexer().IndexField(ctx, &v1.RoomIngress{}, "indexToken", repos.BuildIndexToken)
+	return mgr
 }

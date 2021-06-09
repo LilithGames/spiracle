@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: spiracle
   namespace: default
@@ -7,17 +7,15 @@ spec:
   selector:
     matchLabels:
       app: spiracle
-  replicas: 2
+  serviceName: spiracle
+  replicas: &replicas 3
   revisionHistoryLimit: 0
-  strategy:
-    type: RollingUpdate
   template:
     metadata:
       labels:
         app: spiracle
     spec:
-      restartPolicy: Always
-      serviceAccountName: spiracle
+      terminationGracePeriodSeconds: 10
       containers:
         - name: spiracle
           image: spiracle:latest
@@ -25,7 +23,7 @@ spec:
           command: ["./spiracle"]
           env:
             - name: OLRIC_DISCOVERY_PROVIDER
-              value: k8s
+              value: ""
             - name: OLRIC_DISCOVERY_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -34,9 +32,10 @@ spec:
               value: app
             - name: OLRIC_DISCOVERY_LABEL_VALUE
               value: spiracle
-          volumeMounts:
-            - name: spiracle-data
-              mountPath: /var/lib/data
+            - name: OLRIC_CLIENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           livenessProbe:
             httpGet:
               path: /healthz
@@ -49,15 +48,13 @@ spec:
               port: 8081
             initialDelaySeconds: 5
             periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/bash", "-c", "sleep 15"]
         - name: kube-rbac-proxy
           image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
           args: ["--secure-listen-address=0.0.0.0:8443", "--upstream=http://127.0.0.1:8080/", "--logtostderr=true", "--v=10"]
-      volumes:
-        - name: spiracle-data
-          emptyDir: {}
-        - name: spiracle-config
-          configMap:
-            name: spiracle-config
 
 ---
 apiVersion: v1
@@ -87,5 +84,19 @@ spec:
     - port: 4321
       targetPort: 4321
       protocol: UDP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: olric
+  namespace: default
+spec:
+  selector:
+    app: spiracle
+  type: LoadBalancer
+  ports:
+    - port: 3320
+      targetPort: 3320
 
 ---

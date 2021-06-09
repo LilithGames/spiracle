@@ -19,7 +19,7 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.rules[0].server
+    - jsonPath: .spec.rooms[0].server
       name: Server
       type: string
     name: v1
@@ -51,7 +51,7 @@ spec:
                           token:
                             format: int64
                             maximum: 4294967295
-                            minimum: 1
+                            minimum: 0
                             type: integer
                         required:
                         - id
@@ -66,7 +66,6 @@ spec:
                       type: string
                   required:
                   - players
-                  - upstream
                   type: object
                 minItems: 1
                 type: array
@@ -81,18 +80,42 @@ spec:
                     players:
                       items:
                         properties:
+                          detail:
+                            type: string
+                          expire:
+                            format: date-time
+                            type: string
                           id:
+                            type: string
+                          status:
+                            enum:
+                            - Success
+                            - Pending
+                            - Failure
+                            - Expired
+                            - Retry
+                            type: string
+                          timestamp:
+                            format: date-time
                             type: string
                           token:
                             format: int64
                             maximum: 4294967295
-                            minimum: 1
+                            minimum: 0
                             type: integer
                         required:
+                        - detail
+                        - expire
                         - id
+                        - status
+                        - timestamp
                         - token
                         type: object
                       type: array
+                    server:
+                      type: string
+                    upstream:
+                      type: string
                   type: object
                 type: array
             type: object

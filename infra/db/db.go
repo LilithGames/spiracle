@@ -3,14 +3,16 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
-	"time"
 	"os"
+	"time"
+	// "strconv"
 
 	"github.com/buraksezer/olric"
-	"github.com/buraksezer/olric/config"
-	"github.com/buraksezer/olric/client"
 	discovery "github.com/buraksezer/olric-cloud-plugin/lib"
+	"github.com/buraksezer/olric/client"
+	"github.com/buraksezer/olric/config"
 )
 
 func ServerLocalConfig() *config.Config {
@@ -22,15 +24,24 @@ func ServerLocalConfig() *config.Config {
 
 func ServerClusterConfig() *config.Config {
 	c := config.New("lan")
+	c.BindAddr = "0.0.0.0"
+	c.MemberlistConfig.BindAddr = "0.0.0.0"
+	// c.ReplicationMode = config.AsyncReplicationMode
+	// c.ReplicaCount = 1
+	// c.ReadRepair = true
+	// c.MaxJoinAttempts = 10
+	// c.WriteQuorum = 1
+	// c.ReadQuorum = 1
+	// c.MemberCountQuorum = 2
 	if os.Getenv("OLRIC_DISCOVERY_PROVIDER") == "k8s" {
 		ns := os.Getenv("OLRIC_DISCOVERY_NAMESPACE")
 		labelname := os.Getenv("OLRIC_DISCOVERY_LABEL_NAME")
 		labelvalue := os.Getenv("OLRIC_DISCOVERY_LABEL_VALUE")
 		labelSelector := fmt.Sprintf("%s=%s", labelname, labelvalue)
 		c.ServiceDiscovery = map[string]interface{}{
-			"plugin": &discovery.CloudDiscovery{},
+			"plugin":   &discovery.CloudDiscovery{},
 			"provider": "k8s",
-			"args": fmt.Sprintf("namespace=%s label_selector=\"%s\"", ns, labelSelector)
+			"args":     fmt.Sprintf("namespace=%s label_selector=\"%s\"", ns, labelSelector),
 		}
 	}
 	return c
@@ -38,7 +49,7 @@ func ServerClusterConfig() *config.Config {
 
 func ClientLocalConfig() *client.Config {
 	c := &client.Config{
-		Servers:       []string{"localhost:3320"},
+		Servers: []string{"localhost:3320"},
 		Client: &config.Client{
 			DialTimeout: 10 * time.Second,
 			KeepAlive:   10 * time.Second,
@@ -48,12 +59,33 @@ func ClientLocalConfig() *client.Config {
 	return c
 }
 
+func ClientClusterLocalConfig() *client.Config {
+	host := os.Getenv("OLRIC_CLIENT_HOST")
+	if host == "" {
+		host = "localhost"
+	}
+	port := os.Getenv("OLRIC_CLIENT_PORT")
+	if port == "" {
+		port = "3320"
+	}
+	c := &client.Config{
+		Servers: []string{fmt.Sprintf("%s:%s", host, port)},
+		Client: &config.Client{
+			DialTimeout: 10 * time.Second,
+			KeepAlive:   10 * time.Second,
+			MaxConn:     100,
+		},
+	}
+	return c
+}
+
+
 func ProvideServer(ctx context.Context, c *config.Config) (*olric.Olric, error) {
 	ready := make(chan struct{})
 	done := make(chan error)
 	c.Started = func() {
 		defer close(ready)
-		log.Println("[INFO] Olric is ready to accept connections")
+		log.Println("[INFO] Olric is started")
 	}
 	db, err := olric.New(c)
 	if err != nil {
@@ -65,6 +97,15 @@ func ProvideServer(ctx context.Context, c *config.Config) (*olric.Olric, error) 
 	}()
 	select {
 	case <-ready:
+		dmap, err := db.NewDMap("status.ready")
+		if err != nil {
+			return nil, err
+		}
+		hostname, _ := os.Hostname()
+		if err := dmap.Put(hostname, true); err != nil {
+			return nil, err
+		}
+		log.Println("[INFO] Olric is ready to accept connections")
 		return db, nil
 	case err, ok := <-done:
 		if !ok {

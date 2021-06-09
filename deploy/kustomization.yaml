@@ -10,7 +10,7 @@ resources:
   - rbac/election.yaml
   - rbac/role.yaml
   - rbac/sa.yaml
-  - deploy.yaml
+  - spiracle.yaml
 # patchesStrategicMerge:
   # - patch.yaml
 configMapGenerator:

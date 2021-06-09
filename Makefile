@@ -33,8 +33,8 @@ image: build
 .PHONY: install
 install:
 	@kubectl apply -k deploy
-	@kubectl rollout restart deployment.apps/spiracle
-	@kubectl rollout status deployment.apps/spiracle
+	@kubectl rollout restart statefulset.apps/spiracle
+	@kubectl rollout status statefulset.apps/spiracle
 
 .PHONY: deploy
 deploy: image install
@@ -45,8 +45,8 @@ clean:
 
 .PHONY: install-sample
 install-sample:
-	@kubectl apply -f deploy/samples/roomingress1.yaml
+	@kubectl apply -f deploy/samples/roomingress.yaml
 
 .PHONY: clean-sample
 clean-sample:
-	@kubectl delete -f deploy/samples/roomingress1.yaml
+	@kubectl delete -f deploy/samples/roomingress.yaml

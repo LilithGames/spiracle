@@ -1,6 +1,9 @@
 package controllers
 
-import "reflect"
+import (
+	"reflect"
+	"time"
+)
 
 func contains(items []string, x string) bool {
 	for i := range items {
@@ -29,4 +32,17 @@ func union(a []string, b []string) []string {
 		t[b[i]] = struct{}{}
 	}
 	return keys(t)
+}
+
+func min(a []time.Duration) *time.Duration {
+	if len(a) == 0 {
+		return nil
+	}
+	m := a[0]
+	for i := range a {
+		if a[i] < m {
+			m = a[i]
+		}
+	}
+	return &m
 }

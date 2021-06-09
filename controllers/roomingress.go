@@ -3,10 +3,11 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"net"
+	"time"
 
 	v1 "github.com/LilithGames/spiracle/api/v1"
 	"github.com/go-logr/logr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -20,9 +21,9 @@ const FinalizerName = "projectdavinci.com/finalizer"
 
 type RoomIngressReconciler struct {
 	client.Client
-	Scheme  *runtime.Scheme
-	Log     logr.Logger
-	Routers repos.RouterRepo
+	Scheme    *runtime.Scheme
+	Log       logr.Logger
+	TokenRepo repos.TokenRepo
 }
 
 func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -39,7 +40,6 @@ func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if ring.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !contains(ring.GetFinalizers(), FinalizerName) {
 			controllerutil.AddFinalizer(ring, FinalizerName)
-			it.syncTokens(ring)
 			if err := it.Update(ctx, ring); err != nil {
 				return ctrl.Result{}, fmt.Errorf("AddFinalizer update err: %w", err)
 			}
@@ -48,63 +48,79 @@ func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		log.Info("removing external resource")
 		controllerutil.RemoveFinalizer(ring, FinalizerName)
 		ring.Spec = v1.RoomIngressSpec{}
-		it.syncTokens(ring)
 		if err := it.Update(ctx, ring); err != nil {
 			return ctrl.Result{}, fmt.Errorf("RemoveFinalizer update err: %w", err)
 		}
 	}
-	if n := it.syncTokens(ring); n > 0 {
-		if err := it.Update(ctx, ring); err != nil {
-			return ctrl.Result{}, fmt.Errorf("update err: %w", err)
+	if n, requeue := it.syncTokens(ring); n > 0 {
+		if err := it.Status().Update(ctx, ring); err != nil {
+			return it.requeue(requeue), fmt.Errorf("update status err: %w", err)
 		}
+		return it.requeue(requeue), nil
 	}
 	return ctrl.Result{}, nil
 }
 
-func (it *RoomIngressReconciler) getRouterRecord(s *v1.RoomIngressStatus, pos PlayerPos) (*repos.RouterRecord, string) {
-	room := &s.Rooms[pos.RoomIndex]
-	player := &room.Players[pos.PlayerIndex]
-	addr, _ := net.ResolveUDPAddr("udp4", room.Upstream)
-	return &repos.RouterRecord{
-		Token:    uint32(player.Token),
-		Addr:     addr,
-		RoomId:   room.Id,
-		PlayerId: player.Id,
-	}, room.Server
+func (it *RoomIngressReconciler) requeue(d *time.Duration) ctrl.Result {
+	if d != nil {
+		return ctrl.Result{Requeue: true, RequeueAfter: *d}
+	}
+	return ctrl.Result{}
 }
 
-func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) int {
-	past := ring.Status
-	curr := GetStatus(ring.Spec)
-	diffs := DiffRoomStatus(past, curr)
+func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Duration) {
+	requeue := make([]time.Duration, 0)
+	past := &ring.Status
+	curr := GetStatus(&ring.Spec, past)
+	diffs := DiffRoomStatus(past, curr, DiffUpdater(TokenUpdatedHandler()))
+	n := 0
 	for i := range diffs {
 		diff := &diffs[i]
-		switch diff.Type {
-		case DiffNew:
-			record, scope := it.getRouterRecord(&curr, diff.Current)
-			if err := it.Routers.Create(record, repos.RouterScope(scope)); err != nil {
-				it.Log.Error(err, "create router err", "record", record, "scope", scope)
+		if diff.Type == DiffNew || diff.Type == DiffUpdated {
+			c := GetPlayerStatusByPos(curr, diff.Current)
+			if c.Player.Status == v1.PlayerStatusExpired {
+				continue
 			}
-		case DiffUpdated:
-			crecord, cscope := it.getRouterRecord(&curr, diff.Current)
-			precord, pscope := it.getRouterRecord(&past, diff.Past)
-			if err := it.Routers.Create(crecord, repos.RouterScope(cscope)); err != nil {
-				it.Log.Error(err, "create router err", "record", crecord, "scope", cscope)
+			token, err := it.TokenRepo.Create(context.TODO(), repos.TokenCreationToken(uint32(c.Player.Token)))
+			if err != nil {
+				c.Player.Status = v1.PlayerStatusFailure
+				c.Player.Detail = err.Error()
+				// requeue = append(requeue, time.Minute)
+			} else {
+				c.Player.Status = v1.PlayerStatusSuccess
+				c.Player.Token = int64(token.TToken)
+				c.Player.Timestamp = metav1.NewTime(token.Timestamp)
+				c.Player.Expire = metav1.NewTime(token.Expire)
+				requeue = append(requeue, token.Duration())
 			}
-			if err := it.Routers.Delete(precord.Token, repos.RouterScope(pscope)); err != nil {
-				it.Log.Error(err, "delete router err", "record", precord, "scope", pscope)
+		}
+		if diff.Type == DiffDeleted || diff.Type == DiffUpdated {
+			p := GetPlayerStatusByPos(past, diff.Past)
+			if p.Player.Status == v1.PlayerStatusSuccess {
+				it.TokenRepo.Delete(context.TODO(), uint32(p.Player.Token))
 			}
-		case DiffDeleted:
-			record, scope := it.getRouterRecord(&past, diff.Past)
-			if err := it.Routers.Delete(record.Token, repos.RouterScope(scope)); err != nil {
-				it.Log.Error(err, "delete router err", "record", record, "scope", scope)
+		}
+		if diff.Type == DiffUnchanged {
+			c := GetPlayerStatusByPos(curr, diff.Current)
+			if c.Player.Status == v1.PlayerStatusSuccess {
+				now := time.Now().UTC()
+				expire := c.Player.Expire.Time
+				fmt.Printf("%+v, %+v\n", now, expire)
+				if now.After(expire) {
+					c.Player.Status = v1.PlayerStatusExpired
+					c.Player.Detail = "token expired"
+					it.TokenRepo.Delete(context.TODO(), uint32(c.Player.Token))
+					n++
+				} else {
+					requeue = append(requeue, expire.Sub(now))
+				}
 			}
-		default:
-			panic("unknown diff type")
+		} else {
+			n++
 		}
 	}
-	ring.Status = curr
-	return len(diffs)
+	ring.Status = *curr
+	return n, min(requeue)
 }
 
 func (it *RoomIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
