@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"sync"
 	"log"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -8,8 +9,10 @@ import (
 )
 
 func main() {
+	cpath := flag.String("config", "config.yaml", "config path")
+	flag.Parse()
 	ctx := ctrl.SetupSignalHandler()
-	conf, err := config.Load("config.yaml")
+	conf, err := config.Load(*cpath)
 	if err != nil {
 		log.Fatalln("load config err: ", err)
 	}
