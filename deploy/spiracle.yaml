@@ -16,6 +16,7 @@ spec:
         app: spiracle
     spec:
       terminationGracePeriodSeconds: 10
+      serviceAccount: spiracle
       containers:
         - name: spiracle
           image: spiracle:latest
