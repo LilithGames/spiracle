@@ -25,7 +25,7 @@ func NewRouterRepo(db *olric.Olric) (RouterRepo, error) {
 }
 
 func (it *routerRepo) name(scope string, name string) string {
-	return scope + "." + name
+	return scope + ":" + name
 }
 
 func (it *routerRepo) Create(record *RouterRecord, opts ...RouterOption) error {

@@ -19,11 +19,10 @@ type proxyHandler struct {
 }
 
 func (it *RoomProxy) multiplexing(buffer []byte) proxyHandler {
-	t, err := it.multiplex.GetToken(buffer)
+	ch, err := it.multiplex.GetChannel(buffer)
 	if err != nil {
 		return proxyHandler{ch: byte(0), u: it.drop, d: it.drop}
 	}
-	ch := t.(byte)
 	switch ch {
 	case 0x01:
 		return proxyHandler{ch: ch, u: it.ukcp, d: it.dkcp}
@@ -44,13 +43,13 @@ func (it *RoomProxy) kcptoken(ch byte, buffer []byte) (uint32, error) {
 		if err != nil {
 			return 0, err
 		}
-		return token.(uint32), nil
+		return token, nil
 	case 'x':
 		token, err := it.heartbeat.GetToken(buffer[1:])
 		if err != nil {
 			return 0, err
 		}
-		return token.(uint32), nil
+		return token, nil
 	default:
 		return 0, errors.New("unknown kcp channel")
 	}
@@ -65,17 +64,22 @@ func (it *RoomProxy) dkcp(ch byte, m *proxy.UdpMsg) error {
 
 	src := m.Addr
 	var dst *net.UDPAddr
-	s, err := it.session.Get(token)
+	s, err := it.session.Get(token, repos.SessionScope(it.name))
 	if err != nil {
-		// warning if !errors.Is(err, repos.ErrKeyNotFound)
-		record, err := it.router.Get(token)
-		if err != nil {
-			// log
+		// mecris count here
+		if errors.Is(err, repos.ErrNotExists) {
+			record, err := it.router.Get(token, repos.RouterScope(it.name))
+			if err != nil {
+				// log
+				return err
+			}
+			dst = record.Addr
+			// warning
+			it.session.CreateOrUpdate(&repos.Session{Token: token, Src: src, Dst: dst}, repos.SessionScope(it.name), repos.SessionExpire(it.expire))
+		} else {
+			// warning
 			return err
 		}
-		dst = record.Addr
-		// warning
-		it.session.CreateOrUpdate(&repos.Session{Token: token, Src: src, Dst: dst}, repos.Expire(it.expire))
 	} else {
 		dst = s.Dst
 	}
@@ -88,7 +92,7 @@ func (it *RoomProxy) ukcp(ch byte, m *proxy.UdpMsg) error {
 	if err != nil {
 		return err
 	}
-	s, err := it.session.Get(token)
+	s, err := it.session.Get(token, repos.SessionScope(it.name))
 	if err != nil {
 		return err
 	}

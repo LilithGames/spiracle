@@ -50,3 +50,7 @@ install-sample:
 .PHONY: clean-sample
 clean-sample:
 	@kubectl delete -f deploy/samples/roomingress.yaml
+
+.PHONY: tag
+tag:
+	@git tag $$(svu next)

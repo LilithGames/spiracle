@@ -19,6 +19,7 @@ import (
 	v1 "github.com/LilithGames/spiracle/api/v1"
 	"github.com/LilithGames/spiracle/controllers"
 	"github.com/LilithGames/spiracle/repos"
+	"github.com/LilithGames/spiracle/config"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -34,20 +35,16 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-func controller(ctx context.Context) manager.Manager {
-	metricsAddr := ":8080"
-	enableLeaderElection := true
-	probeAddr := ":8081"
-
+func controller(ctx context.Context, conf *config.Config) manager.Manager {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{})))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
+		MetricsBindAddress:     conf.Controller.MetricsAddr,
 		Port:                   9443,
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "eed665e4.projectdavinci.com",
+		HealthProbeBindAddress: conf.Controller.ProbeAddr,
+		LeaderElection:         conf.Controller.LeaderElection.Enable,
+		LeaderElectionID:       conf.Controller.LeaderElection.Id,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

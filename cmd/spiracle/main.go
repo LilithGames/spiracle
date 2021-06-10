@@ -16,7 +16,7 @@ func main() {
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	db := database(ctx, wg)
-	mgr := controller(ctx)
+	mgr := controller(ctx, conf)
 	go spiracle(ctx, conf, wg, db, mgr)
 	if err := mgr.Start(ctx); err != nil {
 		log.Println(err, "[ERROR] controller stop err")

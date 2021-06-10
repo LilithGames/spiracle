@@ -1,19 +1,25 @@
 package repos
 
-import "sync"
+import (
+	"sync"
+	"fmt"
+	"strings"
+)
 
 type memoryRouterRepo struct {
 	dict *sync.Map
 }
 
-func NewMemoryRouterRepo() (RouterRepo, error) {
+func NewMemoryRouterRepo() RouterRepo {
 	return &memoryRouterRepo{
 		dict: &sync.Map{},
-	}, nil
+	}
 }
 
 func (it *memoryRouterRepo) Create(record *RouterRecord, opts ...RouterOption) error {
-	_, loaded := it.dict.LoadOrStore(record.Token, record)
+	o := getRouterOptions(opts...)
+	key := fmt.Sprintf("%s:%s", o.scope, str(record.Token))
+	_, loaded := it.dict.LoadOrStore(key, record)
 	if loaded {
 		return ErrAlreadyExists
 	}
@@ -25,17 +31,23 @@ func (it *memoryRouterRepo) Update(record *RouterRecord, opts ...RouterOption) e
 }
 
 func (it *memoryRouterRepo) CreateOrUpdate(record *RouterRecord, opts ...RouterOption) error {
-	it.dict.Store(record.Token, record)
+	o := getRouterOptions(opts...)
+	key := fmt.Sprintf("%s:%s", o.scope, str(record.Token))
+	it.dict.Store(key, record)
 	return nil
 }
 
 func (it *memoryRouterRepo) Delete(token TToken, opts ...RouterOption) error {
-	it.dict.Delete(token)
+	o := getRouterOptions(opts...)
+	key := fmt.Sprintf("%s:%s", o.scope, str(token))
+	it.dict.Delete(key)
 	return nil
 }
 
 func (it *memoryRouterRepo) Get(token TToken, opts ...RouterOption) (*RouterRecord, error) {
-	value, ok := it.dict.Load(token)
+	o := getRouterOptions(opts...)
+	key := fmt.Sprintf("%s:%s", o.scope, str(token))
+	value, ok := it.dict.Load(key)
 	if !ok {
 		return nil, ErrNotExists
 	}
@@ -43,8 +55,12 @@ func (it *memoryRouterRepo) Get(token TToken, opts ...RouterOption) (*RouterReco
 }
 
 func (it *memoryRouterRepo) List(f func(*RouterRecord) bool, opts ...RouterOption) error {
+	o := getRouterOptions(opts...)
 	it.dict.Range(func(key interface{}, value interface{}) bool {
-		return f(value.(*RouterRecord))
+		if strings.HasPrefix(key.(string), o.scope) {
+			return f(value.(*RouterRecord))
+		}
+		return true
 	})
 	return nil
 }

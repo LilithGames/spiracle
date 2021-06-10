@@ -6,11 +6,11 @@ import (
 	"github.com/LilithGames/spiracle/protocol"
 )
 
-func Parser() protocol.FuncParserHandler {
-	minSize := 1
-	return func(data []byte) (interface{}, error) {
-		if len(data) < minSize {
-			return nil, errors.New("invalid multiplex buffer")
+func Parser() protocol.FuncMultiplexParser {
+	size := 1
+	return func(data []byte) (byte, error) {
+		if len(data) < size {
+			return 0, errors.New("invalid multiplex buffer")
 		}
 		b := data[0]
 		switch b {
@@ -21,7 +21,7 @@ func Parser() protocol.FuncParserHandler {
 		case 'x':
 			return b, nil
 		default:
-			return nil, errors.New("unknown channel")
+			return 0, errors.New("unknown multiplexing channel")
 		}
 	}
 }

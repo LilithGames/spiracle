@@ -79,10 +79,15 @@ metadata:
 spec:
   selector:
     app: spiracle
-  type: ClusterIP
+  type: LoadBalancer
   ports:
-    - port: 4321
-      targetPort: 4321
+    - name: dev
+      port: 4000
+      targetPort: 4000
+      protocol: UDP
+    - name: alpha
+      port: 5000
+      targetPort: 5000
       protocol: UDP
 
 ---

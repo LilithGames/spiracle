@@ -23,7 +23,7 @@ func NewClientRouterRepo(db *client.Client) RouterRepo {
 }
 
 func (it *routerClientRepo) name(scope string, name string) string {
-	return scope + "." + name
+	return scope + ":" + name
 }
 
 func (it *routerClientRepo) Create(record *RouterRecord, opts ...RouterOption) error {

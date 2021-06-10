@@ -1,6 +1,15 @@
 roomproxy:
+  debug: false
+  workers: 2
   servers:
     - name: dev
+      host: 0.0.0.0
       port: 4000
     - name: alpha
+      host: 0.0.0.0
       port: 5000
+controller:
+  leaderelection:
+    enable: true
+    id: eed665e4.projectdavinci.com
+

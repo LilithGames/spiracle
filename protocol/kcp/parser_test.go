@@ -12,5 +12,5 @@ func TestKcpBasic(t *testing.T) {
 	buffer[1] = 0x01
 	token, err := p(buffer[1:])
 	assert.Nil(t, err)
-	assert.Equal(t, uint32(1), token.(uint32))
+	assert.Equal(t, uint32(1), token)
 }
