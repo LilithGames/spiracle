@@ -30,6 +30,11 @@ run: build
 image: build
 	@docker-compose -f deploy/build/docker-compose.yaml build
 
+.PHONY: push
+push: crd build
+	@REVISION=$$(git describe --tags) docker-compose -f deploy/build/docker-compose.yaml build spiracle-release
+	@REVISION=$$(git describe --tags) docker-compose -f deploy/build/docker-compose.yaml push spiracle-release
+
 .PHONY: install
 install:
 	@kubectl apply -k deploy
