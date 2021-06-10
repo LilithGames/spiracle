@@ -22,6 +22,9 @@ spec:
     - jsonPath: .spec.rooms[0].server
       name: Server
       type: string
+    - jsonPath: .spec.rooms[0].id
+      name: Room
+      type: string
     name: v1
     schema:
       openAPIV3Schema:

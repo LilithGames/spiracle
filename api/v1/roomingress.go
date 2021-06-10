@@ -70,6 +70,7 @@ type RoomIngressStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Server",type=string,JSONPath=`.spec.rooms[0].server`
+//+kubebuilder:printcolumn:name="Room",type=string,JSONPath=`.spec.rooms[0].id`
 //+kubebuilder:resource:shortName="ring"
 type RoomIngress struct {
 	metav1.TypeMeta   `json:",inline"`
