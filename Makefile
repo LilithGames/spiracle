@@ -59,3 +59,7 @@ clean-sample:
 .PHONY: tag
 tag:
 	@git tag $$(svu next)
+
+.PHONY: release
+release: tag push
+	@git push --tags
