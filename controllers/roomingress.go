@@ -23,7 +23,7 @@ type RoomIngressReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
 	Log       logr.Logger
-	TokenRepo repos.TokenRepo
+	TokenRepos map[string]repos.TokenRepo
 }
 
 func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -81,23 +81,31 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 			if c.Player.Status == v1.PlayerStatusExpired {
 				continue
 			}
-			token, err := it.TokenRepo.Create(context.TODO(), repos.TokenCreationToken(uint32(c.Player.Token)))
+			repo, ok := it.TokenRepos[c.Room.Server]
+			if !ok {
+				c.Player.Status = v1.PlayerStatusFailure
+				c.Player.Detail = "unknown room.server"
+				continue
+			}
+			token, err := repo.Create(context.TODO(), repos.TokenCreationToken(uint32(c.Player.Token)))
 			if err != nil {
 				c.Player.Status = v1.PlayerStatusFailure
 				c.Player.Detail = err.Error()
+				continue
 				// requeue = append(requeue, time.Minute)
-			} else {
-				c.Player.Status = v1.PlayerStatusSuccess
-				c.Player.Token = int64(token.TToken)
-				c.Player.Timestamp = metav1.NewTime(token.Timestamp)
-				c.Player.Expire = metav1.NewTime(token.Expire)
-				requeue = append(requeue, token.Duration())
 			}
+			c.Player.Status = v1.PlayerStatusSuccess
+			c.Player.Token = int64(token.TToken)
+			c.Player.Timestamp = metav1.NewTime(token.Timestamp)
+			c.Player.Expire = metav1.NewTime(token.Expire)
+			requeue = append(requeue, token.Duration())
 		}
 		if diff.Type == DiffDeleted || diff.Type == DiffUpdated {
 			p := GetPlayerStatusByPos(past, diff.Past)
 			if p.Player.Status == v1.PlayerStatusSuccess {
-				it.TokenRepo.Delete(context.TODO(), uint32(p.Player.Token))
+				if repo, ok := it.TokenRepos[p.Room.Server]; ok {
+					repo.Delete(context.TODO(), uint32(p.Player.Token))
+				}
 			}
 		}
 		if diff.Type == DiffUnchanged {
@@ -105,11 +113,12 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 			if c.Player.Status == v1.PlayerStatusSuccess {
 				now := time.Now().UTC()
 				expire := c.Player.Expire.Time
-				fmt.Printf("%+v, %+v\n", now, expire)
 				if now.After(expire) {
 					c.Player.Status = v1.PlayerStatusExpired
 					c.Player.Detail = "token expired"
-					it.TokenRepo.Delete(context.TODO(), uint32(c.Player.Token))
+					if repo, ok := it.TokenRepos[c.Room.Server]; ok {
+						repo.Delete(context.TODO(), uint32(c.Player.Token))
+					}
 					n++
 				} else {
 					requeue = append(requeue, expire.Sub(now))

@@ -17,9 +17,9 @@ import (
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"
 
 	v1 "github.com/LilithGames/spiracle/api/v1"
+	"github.com/LilithGames/spiracle/config"
 	"github.com/LilithGames/spiracle/controllers"
 	"github.com/LilithGames/spiracle/repos"
-	"github.com/LilithGames/spiracle/config"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -50,11 +50,15 @@ func controller(ctx context.Context, conf *config.Config) manager.Manager {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
+	tokens := make(map[string]repos.TokenRepo)
+	for _, server := range conf.RoomProxy.Servers {
+		tokens[server.Name] = repos.NewTsTokenRepo()
+	}
 	reconciler := &controllers.RoomIngressReconciler{
-		Client:    mgr.GetClient(),
-		Scheme:    mgr.GetScheme(),
-		Log:       ctrl.Log,
-		TokenRepo: repos.NewTsTokenRepo(),
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		Log:        ctrl.Log,
+		TokenRepos: tokens,
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RoomIngress")

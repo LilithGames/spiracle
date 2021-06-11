@@ -1,6 +1,8 @@
 package controllers
 
-import v1 "github.com/LilithGames/spiracle/api/v1"
+import (
+	v1 "github.com/LilithGames/spiracle/api/v1"
+)
 
 func GetPlayerStatus(player v1.RoomIngressPlayer, base *v1.RoomIngressPlayerStatus) v1.RoomIngressPlayerStatus {
 	s := v1.RoomIngressPlayerStatus{
@@ -44,17 +46,25 @@ func GetRoomStatus(room v1.RoomIngressRoom, base *v1.RoomIngressRoomStatus) v1.R
 	}
 }
 
+func GetRoomStatusDict(rooms []v1.RoomIngressRoomStatus) map[RoomKey]*v1.RoomIngressRoomStatus {
+	dict := make(map[RoomKey]*v1.RoomIngressRoomStatus)
+	for i := range rooms {
+		room := &rooms[i]
+		dict[RoomKey{ServerId: room.Server, RoomId: room.Id}] = room
+	}
+	return dict
+}
+
 func GetStatus(spec *v1.RoomIngressSpec, base *v1.RoomIngressStatus) *v1.RoomIngressStatus {
 	rooms := make([]v1.RoomIngressRoomStatus, len(spec.Rooms))
-	dict := make(map[string]*v1.RoomIngressRoomStatus)
+	var dict map[RoomKey]*v1.RoomIngressRoomStatus
 	if base != nil {
-		for i := range base.Rooms {
-			room := &base.Rooms[i]
-			dict[room.Id] = room
-		}
+		dict = GetRoomStatusDict(base.Rooms)
 	}
 	for i := range spec.Rooms {
-		rbase, _ := dict[spec.Rooms[i].Id]
+		room := &spec.Rooms[i]
+		key := RoomKey{ServerId: room.Server, RoomId: room.Id}
+		rbase := dict[key]
 		rooms[i] = GetRoomStatus(spec.Rooms[i], rbase)
 	}
 	return &v1.RoomIngressStatus{Rooms: rooms}
@@ -67,8 +77,12 @@ const DiffUpdated = "Updated"
 const DiffDeleted = "Deleted"
 const DiffUnchanged = "Unchanged"
 
-type PlayerKey struct {
+type RoomKey struct {
+	ServerId string
 	RoomId   string
+}
+type PlayerKey struct {
+	RoomKey
 	PlayerId string
 }
 
@@ -95,19 +109,12 @@ func GetPlayerStatusDict(s *v1.RoomIngressStatus) map[PlayerKey]PlayerPos {
 	r := make(map[PlayerKey]PlayerPos)
 	for i := range s.Rooms {
 		room := &s.Rooms[i]
+		roomkey := RoomKey{ServerId: room.Server, RoomId: room.Id}
 		for j := range room.Players {
 			player := &room.Players[j]
-			key := PlayerKey{RoomId: room.Id, PlayerId: player.Id}
+			key := PlayerKey{RoomKey: roomkey, PlayerId: player.Id}
 			r[key] = PlayerPos{RoomIndex: i, PlayerIndex: j}
 		}
-	}
-	return r
-}
-
-func GetPlayerStatusDictKeys(dict map[PlayerKey]PlayerPos) []PlayerKey {
-	r := make([]PlayerKey, 0, len(dict))
-	for k, _ := range dict {
-		r = append(r, k)
 	}
 	return r
 }
@@ -136,7 +143,7 @@ func GetPlayerStatusByPos(s *v1.RoomIngressStatus, pos PlayerPos) PlayerDetail {
 func GetPlayerStatusByKey(s *v1.RoomIngressStatus, key PlayerKey) *PlayerDetail {
 	for i := range s.Rooms {
 		room := &s.Rooms[i]
-		if room.Id == key.RoomId {
+		if room.Server == key.ServerId && room.Id == key.RoomId {
 			for j := range room.Players {
 				player := &room.Players[j]
 				if player.Id == key.PlayerId {
