@@ -16,6 +16,10 @@ type Config struct {
 		Servers []Server
 	}
 	Controller struct {
+		Reconciler struct {
+			Enable bool `default:"true"`
+		}
+		Port           int    `default:"9443"`
 		MetricsAddr    string `default:":8080"`
 		ProbeAddr      string `default:":8081"`
 		LeaderElection struct {

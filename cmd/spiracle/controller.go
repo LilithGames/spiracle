@@ -29,9 +29,8 @@ var (
 )
 
 func init() {
-	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
 	utilruntime.Must(v1.AddToScheme(scheme))
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -41,7 +40,7 @@ func controller(ctx context.Context, conf *config.Config) manager.Manager {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     conf.Controller.MetricsAddr,
-		Port:                   9443,
+		Port:                   conf.Controller.Port,
 		HealthProbeBindAddress: conf.Controller.ProbeAddr,
 		LeaderElection:         conf.Controller.LeaderElection.Enable,
 		LeaderElectionID:       conf.Controller.LeaderElection.Id,
@@ -50,6 +49,30 @@ func controller(ctx context.Context, conf *config.Config) manager.Manager {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
+
+	if conf.Controller.Reconciler.Enable {
+		reconcile(ctx, conf, mgr)
+	} else {
+		setupLog.Info("skip start reconciler")
+	}
+
+	//+kubebuilder:scaffold:builder
+	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up health check")
+		os.Exit(1)
+	}
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up ready check")
+		os.Exit(1)
+	}
+
+	mgr.GetFieldIndexer().IndexField(ctx, &v1.RoomIngress{}, "indexToken", repos.BuildIndexToken)
+
+	setupLog.Info("starting manager")
+	return mgr
+}
+
+func reconcile(ctx context.Context, conf *config.Config, mgr manager.Manager) {
 	tokens := make(map[string]repos.TokenRepo)
 	for _, server := range conf.RoomProxy.Servers {
 		tokens[server.Name] = repos.NewTsTokenRepo()
@@ -70,16 +93,4 @@ func controller(ctx context.Context, conf *config.Config) manager.Manager {
 		setupLog.Error(err, "unable to create controller", "controller", "RoomIngress")
 		os.Exit(1)
 	}
-	//+kubebuilder:scaffold:builder
-	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up health check")
-		os.Exit(1)
-	}
-	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up ready check")
-		os.Exit(1)
-	}
-	setupLog.Info("starting manager")
-	mgr.GetFieldIndexer().IndexField(ctx, &v1.RoomIngress{}, "indexToken", repos.BuildIndexToken)
-	return mgr
 }

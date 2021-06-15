@@ -21,7 +21,7 @@ spec:
         - name: spiracle
           image: spiracle:latest
           imagePullPolicy: Never
-          command: ["./spiracle"]
+          command: ["./spiracle", "-config", "/etc/spiracle/config.yaml"]
           env:
             - name: OLRIC_DISCOVERY_PROVIDER
               value: ""
@@ -53,9 +53,16 @@ spec:
             preStop:
               exec:
                 command: ["/bin/bash", "-c", "sleep 15"]
+          volumeMounts:
+            - name: spiracle-config
+              mountPath: /etc/spiracle
         - name: kube-rbac-proxy
           image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
           args: ["--secure-listen-address=0.0.0.0:8443", "--upstream=http://127.0.0.1:8080/", "--logtostderr=true", "--v=10"]
+      volumes:
+        - name: spiracle-config
+          configMap:
+            name: spiracle-config
 
 ---
 apiVersion: v1

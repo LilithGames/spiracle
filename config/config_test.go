@@ -12,4 +12,5 @@ func TestConfig(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Printf("%+v\n", c)
 	assert.Equal(t, 2, len(c.RoomProxy.Servers))
+	println(c.Controller.Reconciler.Enable)
 }

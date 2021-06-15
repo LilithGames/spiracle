@@ -12,7 +12,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	// clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	v1 "github.com/LilithGames/spiracle/api/v1"
 )
 
@@ -81,7 +81,7 @@ func TestMemoryRouter(t *testing.T) {
 
 func TestK8sRouter(t *testing.T) {
 	scheme := runtime.NewScheme()
-	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	// utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(v1.AddToScheme(scheme))
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{Scheme: scheme, MetricsBindAddress: ":0", HealthProbeBindAddress: ":0"})
 	assert.Nil(t, err)
@@ -90,7 +90,7 @@ func TestK8sRouter(t *testing.T) {
 	go mgr.Start(ctx)
 	time.Sleep(time.Second)
 	repo := NewK8sRouterRepo(mgr.GetClient())
-	record, err := repo.Get(uint32(4), RouterScope("local"))
+	record, err := repo.Get(uint32(5), RouterScope("local"))
 	assert.Nil(t, err)
 	fmt.Printf("%+v\n", record)
 }

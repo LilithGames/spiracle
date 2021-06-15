@@ -28,7 +28,7 @@ run: build
 
 .PHONY: image
 image: build
-	@docker-compose -f deploy/build/docker-compose.yaml build
+	@docker-compose -f deploy/build/docker-compose.yaml build spiracle
 
 .PHONY: push
 push: crd build
