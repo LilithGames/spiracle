@@ -21,9 +21,10 @@ const FinalizerName = "projectdavinci.com/finalizer"
 
 type RoomIngressReconciler struct {
 	client.Client
-	Scheme    *runtime.Scheme
-	Log       logr.Logger
-	TokenRepos map[string]repos.TokenRepo
+	Scheme        *runtime.Scheme
+	Log           logr.Logger
+	TokenRepos    map[string]repos.TokenRepo
+	ExternalRepos repos.ExternelRepo
 }
 
 func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -87,6 +88,11 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 				c.Player.Detail = "unknown room.server"
 				continue
 			}
+			external, err := it.ExternalRepos.Get(c.Room.Server)
+			if err != nil {
+				c.Player.Status = v1.PlayerStatusFailure
+				c.Player.Detail = "get server external err: " + err.Error()
+			}
 			token, err := repo.Create(context.TODO(), repos.TokenCreationToken(uint32(c.Player.Token)))
 			if err != nil {
 				c.Player.Status = v1.PlayerStatusFailure
@@ -96,6 +102,7 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 			}
 			c.Player.Status = v1.PlayerStatusSuccess
 			c.Player.Token = int64(token.TToken)
+			c.Player.Externals = external.HostPorts()
 			c.Player.Timestamp = metav1.NewTime(token.Timestamp)
 			c.Player.Expire = metav1.NewTime(token.Expire)
 			requeue = append(requeue, token.Duration())

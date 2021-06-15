@@ -9,15 +9,26 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/LilithGames/spiracle/repos"
 	"github.com/stretchr/testify/assert"
+	"github.com/LilithGames/spiracle/config"
 )
 
 func TestRoomIngressController(t *testing.T) {
 	ctx := context.TODO()
+	conf := &config.Config{}
+	conf.RoomProxy.Servers = append(conf.RoomProxy.Servers, config.Server{
+		Name: "server1",
+		Host: "0.0.0.0",
+		Port: 5000,
+		Externals: []string{"1.2.3.4:7777"},
+	})
+	externals, err := repos.NewConfigExternalRepo(conf)
+	assert.Nil(t, err)
+
 	trepos := make(map[string]repos.TokenRepo)
 	trepos["server1"] = repos.NewTsTokenRepo()
-	_, err := trepos["server1"].Create(ctx, repos.TokenCreationToken(3))
+	_, err = trepos["server1"].Create(ctx, repos.TokenCreationToken(3))
 	assert.Nil(t, err)
-	rec := &RoomIngressReconciler{TokenRepos: trepos}
+	rec := &RoomIngressReconciler{TokenRepos: trepos, ExternalRepos: externals}
 	ring1 := &v1.RoomIngress{
 		Spec: v1.RoomIngressSpec{
 			Rooms: []v1.RoomIngressRoom{
@@ -58,6 +69,7 @@ func TestRoomIngressController(t *testing.T) {
 	assert.NotNil(t, p21)
 	assert.NotEqual(t, int64(0), p1.Player.Token)
 	assert.Equal(t, v1.PlayerStatusSuccess, p1.Player.Status)
+	assert.Equal(t, "1.2.3.4:7777", p1.Player.Externals[0])
 	assert.Equal(t, int64(2), p2.Player.Token)
 	assert.Equal(t, v1.PlayerStatusSuccess, p2.Player.Status)
 	assert.Equal(t, int64(3), p3.Player.Token)

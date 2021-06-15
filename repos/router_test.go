@@ -65,7 +65,7 @@ func TestClientRouter(t *testing.T) {
 func TestMemoryRouter(t *testing.T) {
 	router := NewMemoryRouterRepo()
 	addr, _ := net.ResolveUDPAddr("udp4", "127.0.0.1:4321")
-	err = router.Create(&RouterRecord{Token: 0x01, Addr: addr, RoomId: "id"}, RouterScope("test1"))
+	err := router.Create(&RouterRecord{Token: 0x01, Addr: addr, RoomId: "id"}, RouterScope("test1"))
 	assert.Nil(t, err)
 	record, err := router.Get(TToken(0x01), RouterScope("test1"))
 	assert.Nil(t, err)

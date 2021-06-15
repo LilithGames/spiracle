@@ -88,6 +88,11 @@ spec:
                           expire:
                             format: date-time
                             type: string
+                          externals:
+                            items:
+                              type: string
+                            minItems: 1
+                            type: array
                           id:
                             type: string
                           status:
@@ -109,6 +114,7 @@ spec:
                         required:
                         - detail
                         - expire
+                        - externals
                         - id
                         - status
                         - timestamp

@@ -54,11 +54,17 @@ func controller(ctx context.Context, conf *config.Config) manager.Manager {
 	for _, server := range conf.RoomProxy.Servers {
 		tokens[server.Name] = repos.NewTsTokenRepo()
 	}
+	externals, err := repos.NewConfigExternalRepo(conf)
+	if err != nil {
+		setupLog.Error(err, "unable to create external repo")
+		os.Exit(1)
+	}
 	reconciler := &controllers.RoomIngressReconciler{
 		Client:     mgr.GetClient(),
 		Scheme:     mgr.GetScheme(),
 		Log:        ctrl.Log,
 		TokenRepos: tokens,
+		ExternalRepos: externals,
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RoomIngress")

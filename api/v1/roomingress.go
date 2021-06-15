@@ -43,13 +43,15 @@ const PlayerStatusSuccess PlayerStatus = "Success"
 const PlayerStatusPending PlayerStatus = "Pending"
 const PlayerStatusFailure PlayerStatus = "Failure"
 const PlayerStatusExpired PlayerStatus = "Expired"
-const PlayerStatusRetry   PlayerStatus = "Retry"
+const PlayerStatusRetry PlayerStatus = "Retry"
 
 type RoomIngressPlayerStatus struct {
 	Id string `json:"id"`
 	//+kubebuilder:validation:Minimum=0
 	//+kubebuilder:validation:Maximum=4294967295
 	Token     int64        `json:"token"`
+	//+kubebuilder:validation:MinItems=1
+	Externals []string     `json:"externals"`
 	Timestamp metav1.Time  `json:"timestamp"`
 	Expire    metav1.Time  `json:"expire"`
 	Status    PlayerStatus `json:"status"`

@@ -17,6 +17,7 @@ func GetPlayerStatus(player v1.RoomIngressPlayer, base *v1.RoomIngressPlayerStat
 		} else {
 			s.Token = base.Token
 		}
+		s.Externals = base.Externals
 		s.Status = base.Status
 		s.Detail = base.Detail
 		s.Timestamp = base.Timestamp
