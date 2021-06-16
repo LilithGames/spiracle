@@ -11,13 +11,44 @@ import (
 	watch "k8s.io/apimachinery/pkg/watch"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "github.com/LilithGames/spiracle/api/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
 var ringsResource = schema.GroupVersionResource{Group: "projectdavinci.com", Version: "v1", Resource: "roomingresses"}
 var ringsKind = schema.GroupVersionKind{Group: "projectdavinci.com", Version: "v1", Kind: "RoomIngress"}
+var fakescheme = runtime.NewScheme()
+var codecs = serializer.NewCodecFactory(fakescheme)
+
+func init() {
+	utilruntime.Must(v1.AddToScheme(fakescheme))
+}
 
 type FakeSpiracleV1 struct {
-	*testing.Fake
+	tracker testing.ObjectTracker
+	testing.Fake
+}
+
+func NewNewSimpleClientset(objects ...runtime.Object) *FakeSpiracleV1 {
+	o := testing.NewObjectTracker(fakescheme, codecs.UniversalDecoder())
+	for _, obj := range objects {
+		if err := o.Add(obj); err != nil {
+			panic(err)
+		}
+	}
+	cs := &FakeSpiracleV1{tracker: o}
+	cs.AddReactor("*", "*", testing.ObjectReaction(o))
+	cs.AddWatchReactor("*", func(action testing.Action) (handled bool, ret watch.Interface, err error) {
+		gvr := action.GetResource()
+		ns := action.GetNamespace()
+		watch, err := o.Watch(gvr, ns)
+		if err != nil {
+			return false, nil, err
+		}
+		return true, watch, nil
+	})
+	return cs
 }
 
 func (it *FakeSpiracleV1) RESTClient() rest.Interface {

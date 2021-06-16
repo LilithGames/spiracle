@@ -3,6 +3,8 @@ package controllers
 import (
 	"reflect"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func contains(items []string, x string) bool {
@@ -45,4 +47,8 @@ func min(a []time.Duration) *time.Duration {
 		}
 	}
 	return &m
+}
+
+func ptr(t metav1.Time) *metav1.Time {
+	return &t
 }

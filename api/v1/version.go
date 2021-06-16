@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	GroupVersion = schema.GroupVersion{Group: "projectdavinci.com", Version: "v1"}
-	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
-	AddToScheme = SchemeBuilder.AddToScheme
+	GroupVersion     = schema.GroupVersion{Group: "projectdavinci.com", Version: "v1"}
+	GroupVersionKind = schema.GroupVersionKind{Group: "projectdavinci.com", Version: "v1", Kind: "RoomIngress"}
+	SchemeBuilder    = &scheme.Builder{GroupVersion: GroupVersion}
+	AddToScheme      = SchemeBuilder.AddToScheme
 )
-

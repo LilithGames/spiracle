@@ -86,25 +86,30 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 			if !ok {
 				c.Player.Status = v1.PlayerStatusFailure
 				c.Player.Detail = "unknown room.server"
+				n++
 				continue
 			}
 			external, err := it.ExternalRepos.Get(c.Room.Server)
 			if err != nil {
 				c.Player.Status = v1.PlayerStatusFailure
 				c.Player.Detail = "get server external err: " + err.Error()
+				n++
+				continue
 			}
 			token, err := repo.Create(context.TODO(), repos.TokenCreationToken(uint32(c.Player.Token)))
 			if err != nil {
 				c.Player.Status = v1.PlayerStatusFailure
 				c.Player.Detail = err.Error()
+				n++
 				continue
 				// requeue = append(requeue, time.Minute)
 			}
 			c.Player.Status = v1.PlayerStatusSuccess
 			c.Player.Token = int64(token.TToken)
 			c.Player.Externals = external.HostPorts()
-			c.Player.Timestamp = metav1.NewTime(token.Timestamp)
-			c.Player.Expire = metav1.NewTime(token.Expire)
+			c.Player.Timestamp = ptr(metav1.NewTime(token.Timestamp))
+			c.Player.Expire = ptr(metav1.NewTime(token.Expire))
+			n++
 			requeue = append(requeue, token.Duration())
 		}
 		if diff.Type == DiffDeleted || diff.Type == DiffUpdated {
@@ -113,6 +118,9 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 				if repo, ok := it.TokenRepos[p.Room.Server]; ok {
 					repo.Delete(context.TODO(), uint32(p.Player.Token))
 				}
+			}
+			if diff.Type == DiffDeleted {
+				n++
 			}
 		}
 		if diff.Type == DiffUnchanged {
@@ -131,8 +139,6 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 					requeue = append(requeue, expire.Sub(now))
 				}
 			}
-		} else {
-			n++
 		}
 	}
 	ring.Status = *curr

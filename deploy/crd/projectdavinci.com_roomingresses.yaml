@@ -91,7 +91,6 @@ spec:
                           externals:
                             items:
                               type: string
-                            minItems: 1
                             type: array
                           id:
                             type: string
@@ -113,11 +112,8 @@ spec:
                             type: integer
                         required:
                         - detail
-                        - expire
-                        - externals
                         - id
                         - status
-                        - timestamp
                         - token
                         type: object
                       type: array

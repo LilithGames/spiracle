@@ -50,10 +50,9 @@ type RoomIngressPlayerStatus struct {
 	//+kubebuilder:validation:Minimum=0
 	//+kubebuilder:validation:Maximum=4294967295
 	Token     int64        `json:"token"`
-	//+kubebuilder:validation:MinItems=1
-	Externals []string     `json:"externals"`
-	Timestamp metav1.Time  `json:"timestamp"`
-	Expire    metav1.Time  `json:"expire"`
+	Externals []string     `json:"externals,omitempty"`
+	Timestamp *metav1.Time  `json:"timestamp,omitempty"`
+	Expire    *metav1.Time  `json:"expire,omitempty"`
 	Status    PlayerStatus `json:"status"`
 	Detail    string       `json:"detail"`
 }

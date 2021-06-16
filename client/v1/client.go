@@ -5,12 +5,12 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	v1 "github.com/LilithGames/spiracle/api/v1"
+
+	"github.com/LilithGames/spiracle/client/v1/scheme"
 )
 
 type SpiracleV1Interface interface {
@@ -24,10 +24,12 @@ type SpiracleV1Client struct {
 
 func NewForConfig(c *rest.Config) (*SpiracleV1Client, error) {
 	config := *c
-	config.ContentConfig.GroupVersion = &v1.GroupVersion
+	config.GroupVersion = &v1.GroupVersion
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
-	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	if config.UserAgent == "" {
+		config.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
 
 	client, err := rest.RESTClientFor(&config)
 	if err != nil {
