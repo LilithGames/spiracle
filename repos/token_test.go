@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"errors"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,7 @@ func TestToken(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Printf("%+v\n", token)
 	_, err = repo.Create(context.TODO(), TokenCreationToken(token.TToken))
-	assert.Equal(t, err, ErrAlreadyExists)
+	assert.True(t, errors.Is(err, ErrAlreadyExists))
 }
 
 func TestTokenQPS(t *testing.T) {

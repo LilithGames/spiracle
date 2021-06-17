@@ -39,10 +39,10 @@ type tsToken struct {
 
 func NewTsTokenRepo() TokenRepo {
 	k := 12
-	hmax := uint32(1<<(32-k) - 1)
+	hmax := uint32(1<<(31-k) - 1)
 	lmax := uint32(1<<k - 1)
 	max := hmax<<k + lmax
-	if max != math.MaxUint32 {
+	if max != math.MaxInt32 {
 		panic("NewTsTokenRepo max")
 	}
 	repo := &tsToken{
