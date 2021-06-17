@@ -1,4 +1,5 @@
 roomproxy:
+  enable: true
   debug: false
   workers: 2
   servers:

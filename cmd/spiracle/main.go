@@ -12,15 +12,20 @@ func main() {
 	cpath := flag.String("config", "config.yaml", "config path")
 	flag.Parse()
 	ctx := ctrl.SetupSignalHandler()
+	wg := &sync.WaitGroup{}
 	conf, err := config.Load(*cpath)
 	if err != nil {
 		log.Fatalln("load config err: ", err)
 	}
-	wg := &sync.WaitGroup{}
-	wg.Add(2)
-	db := database(ctx, wg)
+
 	mgr := controller(ctx, conf)
-	go spiracle(ctx, conf, wg, db, mgr)
+
+	if conf.RoomProxy.Enable {
+		db := database(ctx, wg)
+		wg.Add(1)
+		go spiracle(ctx, conf, wg, db, mgr)
+	}
+
 	if err := mgr.Start(ctx); err != nil {
 		log.Println(err, "[ERROR] controller stop err")
 		return

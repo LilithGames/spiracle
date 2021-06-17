@@ -16,6 +16,7 @@ func database(ctx context.Context, wg *sync.WaitGroup) *olric.Olric {
 	if err != nil {
 		log.Fatalln("[ERROR] Olric start db err", err)
 	}
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		<-ctx.Done()

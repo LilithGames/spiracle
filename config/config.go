@@ -11,6 +11,7 @@ type Server struct {
 
 type Config struct {
 	RoomProxy struct {
+		Enable  bool `default:"true"`
 		Debug   bool `default:"false"`
 		Workers int  `default:"1"`
 		Servers []Server

@@ -1,4 +1,5 @@
 roomproxy:
+  enable: true
   debug: false
   workers: 2
   servers:
@@ -11,6 +12,8 @@ roomproxy:
       port: 5000
       externals: ["47.103.191.190:15001"]
 controller:
+  reconciler:
+    enable: true
   leaderelection:
     enable: true
     id: eed665e4.projectdavinci.com
