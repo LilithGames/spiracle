@@ -123,7 +123,9 @@ func getRoomProxyOptions(opts ...RoomProxyOption) *roomProxyOptions {
 
 func RoomProxyExpire(expire time.Duration) RoomProxyOption {
 	return newFuncRoomProxyOption(func(o *roomProxyOptions) {
-		o.expire = expire
+		if expire > 0 {
+			o.expire = expire
+		}
 	})
 }
 

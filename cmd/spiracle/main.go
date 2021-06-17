@@ -21,7 +21,7 @@ func main() {
 	mgr := controller(ctx, conf)
 
 	if conf.RoomProxy.Enable {
-		db := database(ctx, wg)
+		db := database(ctx, wg, conf)
 		wg.Add(1)
 		go spiracle(ctx, conf, wg, db, mgr)
 	}

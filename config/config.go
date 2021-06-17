@@ -14,6 +14,10 @@ type Config struct {
 		Enable  bool `default:"true"`
 		Debug   bool `default:"false"`
 		Workers int  `default:"1"`
+		Session struct {
+			MaxIdleDuration int `default:"30"`
+			Expire          int `default:"30"`
+		}
 		Servers []Server
 	}
 	Controller struct {

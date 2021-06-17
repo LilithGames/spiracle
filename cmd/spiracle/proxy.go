@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 	"fmt"
+	"time"
 
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"
 	"github.com/buraksezer/olric"
@@ -28,7 +29,7 @@ func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, db *
 	}
 	routers := repos.NewK8sRouterRepo(mgr.GetClient())
 	for _, s := range conf.RoomProxy.Servers {
-		rp, err := roomproxy.NewRoomProxy(ctx, s.Name, roomproxy.RoomProxySessionRepo(sessions), roomproxy.RoomProxyRouterRepo(routers), roomproxy.RoomProxyDebug(conf.RoomProxy.Debug))
+		rp, err := roomproxy.NewRoomProxy(ctx, s.Name, roomproxy.RoomProxySessionRepo(sessions), roomproxy.RoomProxyRouterRepo(routers), roomproxy.RoomProxyDebug(conf.RoomProxy.Debug), roomproxy.RoomProxyExpire(time.Duration(conf.RoomProxy.Session.Expire)*time.Second))
 		if err != nil {
 			log.Fatalln("create roomproxy err", err)
 		}

@@ -22,11 +22,13 @@ func ServerLocalConfig() *config.Config {
 	return c
 }
 
-func ServerClusterConfig() *config.Config {
+func ServerClusterConfig(maxIdle int) *config.Config {
 	c := config.New("lan")
 	c.BindAddr = "0.0.0.0"
 	c.MemberlistConfig.BindAddr = "0.0.0.0"
-	c.DMaps.Custom["cache.sessions"] = config.DMap{MaxIdleDuration: time.Second*30}
+	if maxIdle > 0 {
+		c.DMaps.Custom["cache.sessions"] = config.DMap{MaxIdleDuration: time.Second*time.Duration(maxIdle)}
+	}
 	// c.ReplicationMode = config.AsyncReplicationMode
 	// c.ReplicaCount = 1
 	// c.ReadRepair = true
