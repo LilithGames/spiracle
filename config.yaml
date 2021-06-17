@@ -2,6 +2,9 @@ roomproxy:
   enable: true
   debug: false
   workers: 2
+  session:
+    maxIdleDuration: 30
+    expire: 30
   servers:
     - name: dev
       host: 0.0.0.0
