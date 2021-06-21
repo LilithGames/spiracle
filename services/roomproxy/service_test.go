@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 	"net"
+	"math"
 	"time"
 
 	"github.com/LilithGames/spiracle/proxy"
@@ -40,6 +41,20 @@ func client(t *testing.T) *net.UDPConn {
 	return conn
 }
 
+func TestRoomProxyReal(t *testing.T) {
+	s := &proxy.Statd{}
+	go s.Tick()
+	ctx := proxy.WithStatd(context.TODO(), s)
+	name := "server1"
+	roomproxy, err := NewRoomProxy(ctx, name)
+	assert.Nil(t, err)
+	target, _ := net.ResolveUDPAddr("udp4", "127.0.0.1:10086")
+	for i := uint32(1); i < math.MaxInt16; i++ {
+		roomproxy.Routers().Create(&repos.RouterRecord{Token: i, Addr: target}, repos.RouterScope(name))
+	}
+	proxy.NewServer("0.0.0.0:4321", roomproxy).Run(ctx)
+}
+
 func TestRoomProxy(t *testing.T) {
 	s := &proxy.Statd{}
 	// go s.Tick()
@@ -51,7 +66,7 @@ func TestRoomProxy(t *testing.T) {
 	token := uint32(4)
 	target, _ := net.ResolveUDPAddr("udp4", "127.0.0.1:10086")
 	roomproxy.Routers().Create(&repos.RouterRecord{Token: token, Addr: target}, repos.RouterScope(name))
-	go proxy.NewServer("127.0.0.1:4321", roomproxy).Run(ctx)
+	go proxy.NewServer("0.0.0.0:4321", roomproxy).Run(ctx)
 	time.Sleep(time.Second)
 
 	c := client(t)

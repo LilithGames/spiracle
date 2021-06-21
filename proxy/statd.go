@@ -137,9 +137,17 @@ func (it *Statd) String() string {
 	return strings.Join(lines, "\n")
 }
 
-func (it *Statd) Tick() {
+type TickHandler func(s *Statd)
+
+func StdoutTickHandler(s *Statd) {
+	fmt.Printf("%v\n", s.String())
+}
+
+func (it *Statd) Tick(th TickHandler) {
 	for range time.Tick(time.Second) {
-		fmt.Printf("%v\n", it.String())
+		if th != nil {
+			th(it)
+		}
 		it.URx().Reset()
 		it.UTx().Reset()
 		it.DRx().Reset()

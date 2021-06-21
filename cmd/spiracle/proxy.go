@@ -18,9 +18,11 @@ import (
 func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, db *olric.Olric, mgr manager.Manager) {
 	defer wg.Done()
 	s := &proxy.Statd{}
+	var th proxy.TickHandler
 	if conf.RoomProxy.Debug {
-		go s.Tick()
+		th = proxy.StdoutTickHandler
 	}
+	go s.Tick(th)
 	// maxproc
 	ctx = proxy.WithStatd(ctx, s)
 	sessions, err := repos.NewSessionRepo(db)
