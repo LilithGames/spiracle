@@ -1,8 +1,9 @@
 package repos
 
 import (
-	"testing"
 	"fmt"
+	"net"
+	"testing"
 
 	"github.com/LilithGames/spiracle/config"
 	"github.com/stretchr/testify/assert"
@@ -17,4 +18,10 @@ func TestExternalRepo(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(e.Addrs))
 	fmt.Printf("%+v\n", e)
+}
+
+func TestUDPAddr(t *testing.T) {
+	addr, err := net.ResolveUDPAddr("udp4", "www.baidu.com:80")
+	assert.Nil(t, err)
+	fmt.Printf("%+v\n", addr)
 }

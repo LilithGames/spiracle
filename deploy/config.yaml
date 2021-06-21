@@ -6,7 +6,7 @@ roomproxy:
     - name: local
       host: 0.0.0.0
       port: 4000
-      externals: ["47.103.191.190:15000"]
+      externals: ["47.103.191.190:15000", "www.baidu.com:80"]
     - name: dev
       host: 0.0.0.0
       port: 5000

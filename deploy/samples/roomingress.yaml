@@ -6,7 +6,7 @@ metadata:
 spec:
   rooms:
     - id: room1
-      server: local1
+      server: local
       upstream: 127.0.0.1:9200
       players:
         - id: player1
