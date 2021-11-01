@@ -28,7 +28,7 @@ run: build
 
 .PHONY: image
 image: build
-	@docker-compose -f deploy/build/docker-compose.yaml build spiracle
+	@docker-compose -f deploy/build/docker-compose.yaml build
 
 .PHONY: push
 push: crd build
@@ -38,8 +38,8 @@ push: crd build
 .PHONY: install
 install:
 	@kubectl apply -k deploy
-	@kubectl rollout restart statefulset.apps/spiracle
-	@kubectl rollout status statefulset.apps/spiracle
+	@kubectl rollout restart statefulset.apps/spiracle -n default
+	@kubectl rollout status statefulset.apps/spiracle -n default
 
 .PHONY: deploy
 deploy: image install

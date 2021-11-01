@@ -39,22 +39,26 @@ func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, fmt.Errorf("get err: %w", err)
 	}
 	if ring.ObjectMeta.DeletionTimestamp.IsZero() {
+		patch := ring.DeepCopy()
 		if !contains(ring.GetFinalizers(), FinalizerName) {
-			controllerutil.AddFinalizer(ring, FinalizerName)
-			if err := it.Update(ctx, ring); err != nil {
+			controllerutil.AddFinalizer(patch, FinalizerName)
+			if err := it.Patch(ctx, patch, client.MergeFrom(ring)); err != nil {
 				return ctrl.Result{}, fmt.Errorf("AddFinalizer update err: %w", err)
 			}
 		}
 	} else if contains(ring.GetFinalizers(), FinalizerName) {
 		log.Info("removing external resource")
-		controllerutil.RemoveFinalizer(ring, FinalizerName)
-		ring.Spec = v1.RoomIngressSpec{}
-		if err := it.Update(ctx, ring); err != nil {
+		patch := ring.DeepCopy()
+		controllerutil.RemoveFinalizer(patch, FinalizerName)
+		patch.Spec = v1.RoomIngressSpec{}
+		if err := it.Patch(ctx, patch, client.MergeFrom(ring)); err != nil {
 			return ctrl.Result{}, fmt.Errorf("RemoveFinalizer update err: %w", err)
 		}
+		return ctrl.Result{}, nil
 	}
-	if n, requeue := it.syncTokens(ring); n > 0 {
-		if err := it.Status().Update(ctx, ring); err != nil {
+	patch := ring.DeepCopy()
+	if n, requeue := it.syncTokens(patch); n > 0 {
+		if err := it.Status().Patch(ctx, patch, client.MergeFrom(ring)); err != nil {
 			return it.requeue(requeue), fmt.Errorf("update status err: %w", err)
 		}
 		return it.requeue(requeue), nil
