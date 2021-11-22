@@ -13,6 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/LilithGames/spiracle/repos"
 )
@@ -151,5 +152,8 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 
 func (it *RoomIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	pred := predicate.GenerationChangedPredicate{}
-	return ctrl.NewControllerManagedBy(mgr).For(&v1.RoomIngress{}).WithEventFilter(pred).Complete(it)
+	opts := controller.Options{
+		MaxConcurrentReconciles: 1,
+	}
+	return ctrl.NewControllerManagedBy(mgr).For(&v1.RoomIngress{}).WithEventFilter(pred).WithOptions(opts).Complete(it)
 }

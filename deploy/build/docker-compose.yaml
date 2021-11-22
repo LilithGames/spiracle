@@ -11,4 +11,3 @@ services:
       context: ../..
       dockerfile: deploy/build/Dockerfile
     image: lilith-registry.cn-shanghai.cr.aliyuncs.com/avatar/spiracle:${REVISION}
-

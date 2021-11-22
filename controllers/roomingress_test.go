@@ -85,7 +85,7 @@ func TestRoomIngressController(t *testing.T) {
 	assert.NotNil(t, u)
 
 	p1 = GetPlayerStatusByKey(&ring1.Status, PlayerKey{RoomKey: room11, PlayerId: "player1"})
-	p1.Player.Expire = metav1.NewTime(time.Now().UTC().Add(-1*time.Second))
+	p1.Player.Expire = ptr(metav1.NewTime(time.Now().UTC().Add(-1*time.Second)))
 	ring1.Spec.Rooms[0].Players = ring1.Spec.Rooms[0].Players[:3]
 	n, u = rec.syncTokens(ring1)
 	assert.Equal(t, 2, n)
