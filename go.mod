@@ -3,8 +3,9 @@ module github.com/LilithGames/spiracle
 go 1.16
 
 require (
-	github.com/buraksezer/olric v0.4.0-beta.2.0.20210502130407-be0cf149f919
+	github.com/buraksezer/olric v0.4.0
 	github.com/buraksezer/olric-cloud-plugin v0.3.0-beta.4.0.20201003183038-f78c20f7619d // indirect
+	github.com/buraksezer/pool v3.0.0+incompatible // indirect
 	github.com/go-logr/logr v0.3.0 // indirect
 	github.com/jinzhu/configor v1.2.1
 	github.com/libp2p/go-reuseport v0.0.2

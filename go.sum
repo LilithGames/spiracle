@@ -111,10 +111,14 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bketelsen/crypt v0.0.3-0.20200106085610-5cbc8cc4026c/go.mod h1:MKsuJmJgSg28kpZDP6UIiPt0e0Oz0kqKNGyRaWEPv84=
 github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
+github.com/buraksezer/connpool v0.4.0 h1:fNLvWu0FOtJxL7Sqetm6+040mhZWVs8c6vrke14SEKw=
+github.com/buraksezer/connpool v0.4.0/go.mod h1:qPiG7gKXo+EjrwG/yqn2StZM4ek6gcYnnGgFIVKN6b0=
 github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72 h1:fUmDBbSvv1uOzo/t8WaxZMVb7BxJ8JECo5lGoR9c5bA=
 github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72/go.mod h1:OEE5igu/CDjGegM1Jn6ZMo7R6LlV/JChAkjfQQIRLpg=
 github.com/buraksezer/olric v0.4.0-beta.2.0.20210502130407-be0cf149f919 h1:uOoh6EQWgsRvqS5P+iWaekuoMBwXDBq2t04J377/I6I=
 github.com/buraksezer/olric v0.4.0-beta.2.0.20210502130407-be0cf149f919/go.mod h1:KKNx5Uqu07ZY4+IDugCuplDK5Yah6YD6ftA1wHlj+BM=
+github.com/buraksezer/olric v0.4.0 h1:qxIpVmvRBIfgqNPeIFXzcnhUj2XwKLDY+XVDro057q4=
+github.com/buraksezer/olric v0.4.0/go.mod h1:xNt+/QiiVuqioJzgTMuiV2LynTNu87L1Tp5289XuU78=
 github.com/buraksezer/olric-cloud-plugin v0.3.0-beta.4.0.20201003183038-f78c20f7619d h1:JNp5TtvYv5SxaP8AqnEf3SoXjeJVesO3d4fgD+CCt1o=
 github.com/buraksezer/olric-cloud-plugin v0.3.0-beta.4.0.20201003183038-f78c20f7619d/go.mod h1:fR341aqXJTpRNbHmnOAZq1dhxzqtoR9VuRZaN69gM+M=
 github.com/buraksezer/pool v3.0.0+incompatible h1:MXcI3YkBnElnbJ8ZPIYqa0dia3qqHDNto1E004YxseA=
