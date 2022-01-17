@@ -22,6 +22,7 @@ type SessionRepo interface {
 type sessionOptions struct {
 	scope  string
 	expire *time.Duration
+	idle   *time.Duration
 }
 
 type SessionOption interface {
@@ -58,5 +59,11 @@ func SessionExpire(expire time.Duration) SessionOption {
 func SessionScope(scope string) SessionOption {
 	return newFuncSessionOption(func(o *sessionOptions) {
 		o.scope = scope
+	})
+}
+
+func SessionMaxIdle(idle time.Duration) SessionOption {
+	return newFuncSessionOption(func(o *sessionOptions) {
+		o.idle = &idle
 	})
 }
