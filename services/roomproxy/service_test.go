@@ -1,10 +1,14 @@
 package roomproxy
 
 import (
+	"bytes"
 	"context"
-	"testing"
-	"net"
+	"encoding/binary"
+	"fmt"
 	"math"
+	"net"
+	"sync"
+	"testing"
 	"time"
 
 	"github.com/LilithGames/spiracle/proxy"
@@ -12,8 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func echo(t *testing.T, ctx context.Context) {
-	addr, err := net.ResolveUDPAddr("udp4", "127.0.0.1:10086")
+func echo(t *testing.T, ctx context.Context, hostport string) {
+	addr, err := net.ResolveUDPAddr("udp4", hostport)
 	assert.Nil(t, err)
 	conn, err := net.ListenUDP("udp", addr)
 	assert.Nil(t, err)
@@ -43,7 +47,7 @@ func client(t *testing.T) *net.UDPConn {
 
 func TestRoomProxyReal(t *testing.T) {
 	s := &proxy.Statd{}
-	go s.Tick()
+	go s.Tick(nil)
 	ctx := proxy.WithStatd(context.TODO(), s)
 	name := "server1"
 	roomproxy, err := NewRoomProxy(ctx, name)
@@ -59,7 +63,7 @@ func TestRoomProxy(t *testing.T) {
 	s := &proxy.Statd{}
 	// go s.Tick()
 	ctx := proxy.WithStatd(context.TODO(), s)
-	go echo(t, ctx)
+	go echo(t, ctx, "127.0.0.1:10086")
 	name := "server1"
 	roomproxy, err := NewRoomProxy(ctx, name)
 	assert.Nil(t, err)
@@ -89,4 +93,60 @@ func TestRoomProxy(t *testing.T) {
 			panic(err)
 		}
 	}
+}
+
+func TestRoomProxyConcurrency(t *testing.T) {
+	scope := "TestRoomProxyConcurrency"
+	serverSize := 10
+	clientPerServerSize := 10
+	packetPerClientSize := 1000
+
+	s := &proxy.Statd{}
+	ready := make(chan struct{})
+	wg := sync.WaitGroup{}
+	go s.Tick(proxy.StdoutTickHandler)
+	ctx := proxy.WithStatd(context.TODO(), s)
+	roomproxy, err := NewRoomProxy(ctx, scope) //, RoomProxyDebug(true)
+	assert.Nil(t, err)
+	worker := func(ctx context.Context, token uint32) {
+		defer wg.Done()
+		<-ready
+		c := client(t)
+		c.Write(append([]byte{'e'}, []byte("hello")...))
+		buf := make([]byte, 2048)
+		n, err := c.Read(buf)
+		assert.Nil(t, err)
+		assert.Equal(t, "ehello", string(buf[:n]))
+		println("connectivity check ok.")
+
+		data1 := new(bytes.Buffer)
+		binary.Write(data1, binary.LittleEndian, []byte{0x01})
+		binary.Write(data1, binary.LittleEndian, token)
+		binary.Write(data1, binary.LittleEndian, []byte("12345678901234567890hello1"))
+		for i := 0; i < packetPerClientSize; i++ {
+			c.Write(data1.Bytes())
+			n, err = c.Read(buf)
+			assert.Nil(t, err)
+			if i == 0 {
+				assert.Equal(t, data1.String(), string(buf[:n]))
+			}
+		}
+	}
+
+	for i := 0; i < serverSize; i++ {
+		addr := fmt.Sprintf("127.0.0.1:%d", 20100+i)
+		target, _ := net.ResolveUDPAddr("udp4", addr)
+		go echo(t, ctx, addr)
+		for j := 0; j < clientPerServerSize; j++ {
+			token := uint32(i*clientPerServerSize + j)
+			roomproxy.Routers().Create(&repos.RouterRecord{Token: token, Addr: target}, repos.RouterScope(scope))
+			wg.Add(1)
+			go worker(ctx, token)
+		}
+	}
+
+	go proxy.NewServer("0.0.0.0:4321", roomproxy, proxy.ServerWorker(4)).Run(ctx)
+	time.Sleep(time.Second)
+	close(ready)
+	wg.Wait()
 }

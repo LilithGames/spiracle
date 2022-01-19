@@ -64,6 +64,8 @@ func SessionScope(scope string) SessionOption {
 
 func SessionMaxIdle(idle time.Duration) SessionOption {
 	return newFuncSessionOption(func(o *sessionOptions) {
-		o.idle = &idle
+		if idle != 0 {
+			o.idle = &idle
+		}
 	})
 }

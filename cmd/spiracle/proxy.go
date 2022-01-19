@@ -8,14 +8,14 @@ import (
 	"time"
 
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"
-	"github.com/buraksezer/olric"
+	// "github.com/buraksezer/olric"
 	"github.com/LilithGames/spiracle/proxy"
 	"github.com/LilithGames/spiracle/services/roomproxy"
 	"github.com/LilithGames/spiracle/repos"
 	"github.com/LilithGames/spiracle/config"
 )
 
-func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, db *olric.Olric, mgr manager.Manager) {
+func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, mgr manager.Manager) {
 	defer wg.Done()
 	s := &proxy.Statd{}
 	var th proxy.TickHandler
@@ -25,7 +25,8 @@ func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, db *
 	go s.Tick(th)
 	// maxproc
 	ctx = proxy.WithStatd(ctx, s)
-	sessions, err := repos.NewSessionRepo(db)
+	// sessions, err := repos.NewSessionRepo(db)
+	sessions, err := repos.NewSessionRepoV2(repos.SessionMaxIdle(time.Second*time.Duration(conf.RoomProxy.Session.MaxIdleDuration)))
 	if err != nil {
 		log.Fatalln("create session repo err", err)
 	}
