@@ -4,21 +4,29 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
+
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/metric/global"
 )
 
 type Traffic struct {
 	pps uint64
 	bw  uint64
+	pc  metric.Int64Counter
+	bc  metric.Int64Counter
 }
 
 type Ch struct {
 	size uint64
+	so   metric.Int64GaugeObserver
 }
 
 type Poolx struct {
 	size int64
+	so   metric.Int64GaugeObserver
 }
 
 type Statd struct {
@@ -35,6 +43,27 @@ type Statd struct {
 	pool   Poolx
 	udrop  Traffic
 	ddrop  Traffic
+
+	once sync.Once
+}
+
+func (it *Statd) Init() {
+	it.once.Do(func() {
+		m := metric.Must(global.Meter("spiracle_proxy"))
+		it.urx.Init(m, "spiracle_proxy_upstream_rx")
+		it.utx.Init(m, "spiracle_proxy_upstream_tx")
+		it.drx.Init(m, "spiracle_proxy_downstream_rx")
+		it.dtx.Init(m, "spiracle_proxy_downstream_tx")
+		for i := 0; i < it.Worker; i++ {
+			it.urxch[i].Init(m, fmt.Sprintf("spiracle_proxy_upstream_rx_%d", i))
+			it.utxch[i].Init(m, fmt.Sprintf("spiracle_proxy_upstream_tx_%d", i))
+			it.drxch[i].Init(m, fmt.Sprintf("spiracle_proxy_downstream_rx_%d", i))
+			it.dtxch[i].Init(m, fmt.Sprintf("spiracle_proxy_downstream_tx_%d", i))
+		}
+		it.pool.Init(m, "spiracle_proxy_memory")
+		it.udrop.Init(m, "spiracle_proxy_upstream_drop")
+		it.ddrop.Init(m, "spiracle_proxy_downstream_drop")
+	})
 }
 
 func (it *Statd) URx() *Traffic {
@@ -157,6 +186,13 @@ func (it *Statd) Tick(th TickHandler) {
 	}
 }
 
+func (it *Traffic) Init(m metric.MeterMust, name string) {
+	it.pc = m.NewInt64Counter(fmt.Sprintf("%s_traffic_packet_count", name))
+	it.pc.Add(context.TODO(), 0)
+	it.bc = m.NewInt64Counter(fmt.Sprintf("%s_traffic_bytes_count", name))
+	it.bc.Add(context.TODO(), 0)
+}
+
 func (it *Traffic) Reset() {
 	if it == nil {
 		return
@@ -171,6 +207,8 @@ func (it *Traffic) Incr(size int) {
 	}
 	atomic.AddUint64(&it.pps, 1)
 	atomic.AddUint64(&it.bw, uint64(size))
+	it.pc.Add(context.TODO(), 1)
+	it.bc.Add(context.TODO(), int64(size))
 }
 
 func (it *Traffic) Add(n int, size int) {
@@ -179,12 +217,21 @@ func (it *Traffic) Add(n int, size int) {
 	}
 	atomic.AddUint64(&it.pps, uint64(n))
 	atomic.AddUint64(&it.bw, uint64(size))
+	it.pc.Add(context.TODO(), int64(n))
+	it.bc.Add(context.TODO(), int64(size))
 }
 
 func (it *Traffic) String() string {
 	pps := atomic.LoadUint64(&it.pps)
 	bw := atomic.LoadUint64(&it.bw)
 	return fmt.Sprintf("%v(%v)", numberToUnit(pps), numberToUnit(bw))
+}
+
+func (it *Ch) Init(m metric.MeterMust, name string) {
+	it.so = m.NewInt64GaugeObserver(fmt.Sprintf("%s_channel_count", name), func(ctx context.Context, r metric.Int64ObserverResult) {
+		size := atomic.LoadUint64(&it.size)
+		r.Observe(int64(size))
+	})
 }
 
 func (it *Ch) Set(size int) {
@@ -197,6 +244,13 @@ func (it *Ch) Set(size int) {
 func (it *Ch) String() string {
 	size := atomic.LoadUint64(&it.size)
 	return fmt.Sprintf("%v", numberToUnit(size))
+}
+
+func (it *Poolx) Init(m metric.MeterMust, name string) {
+	it.so = m.NewInt64GaugeObserver(fmt.Sprintf("%s_pool_count", name), func(ctx context.Context, r metric.Int64ObserverResult) {
+		size := atomic.LoadInt64(&it.size)
+		r.Observe(size)
+	})
 }
 
 func (it *Poolx) Get() {

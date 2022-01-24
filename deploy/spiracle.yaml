@@ -64,19 +64,25 @@ spec:
           configMap:
             name: spiracle-config
 
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-  # name: spiracle-metrics-service
-  # namespace: default
-# spec:
-  # selector:
-    # app: spiracle
-  # ports:
-    # - name: https
-      # port: 8443
-      # targetPort: https
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spiracle-metric
+  namespace: default
+spec:
+  selector:
+    app: spiracle
+  type: LoadBalancer
+  ports:
+    - name: spiracle
+      port: 2222
+      targetPort: 2222
+      protocol: TCP
+    - name: controller
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
 
 ---
 apiVersion: v1

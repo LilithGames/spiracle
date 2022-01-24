@@ -17,4 +17,3 @@ controller:
   leaderelection:
     enable: true
     id: eed665e4.projectdavinci.com
-

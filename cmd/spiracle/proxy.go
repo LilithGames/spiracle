@@ -13,11 +13,17 @@ import (
 	"github.com/LilithGames/spiracle/services/roomproxy"
 	"github.com/LilithGames/spiracle/repos"
 	"github.com/LilithGames/spiracle/config"
+	"github.com/LilithGames/spiracle/infra/telemetry"
 )
 
 func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, mgr manager.Manager) {
 	defer wg.Done()
+	telemetry.InitMeter(ctx)
+	if conf.RoomProxy.MetricsAddr != "" {
+		go telemetry.RunMetricServer(ctx, conf.RoomProxy.MetricsAddr)
+	}
 	s := &proxy.Statd{}
+	s.Init()
 	var th proxy.TickHandler
 	if conf.RoomProxy.Debug {
 		th = proxy.StdoutTickHandler

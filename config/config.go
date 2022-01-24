@@ -19,6 +19,7 @@ type Config struct {
 			Expire          int `default:"30"`
 		}
 		Servers []Server
+		MetricsAddr string `default:":2222"`
 	}
 	Controller struct {
 		Reconciler struct {
