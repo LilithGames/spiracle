@@ -24,6 +24,10 @@ type Config struct {
 	Controller struct {
 		Reconciler struct {
 			Enable bool `default:"true"`
+			Concurrency int `default: "1"`
+			Finalizer struct {
+				Enable bool `default:"true"`
+			}
 		}
 		Port           int    `default:"9443"`
 		MetricsAddr    string `default:":8080"`

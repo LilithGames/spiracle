@@ -5,9 +5,14 @@ services:
     build:
       context: ../..
       dockerfile: deploy/build/Dockerfile
-    image: spiracle:latest
+    image: lilith-registry.cn-shanghai.cr.aliyuncs.com/avatar/hulucc/spiracle:latest
   spiracle-release:
     build:
       context: ../..
       dockerfile: deploy/build/Dockerfile
     image: lilith-registry.cn-shanghai.cr.aliyuncs.com/avatar/spiracle:${REVISION}
+  spiracle-local:
+    build:
+      context: ../..
+      dockerfile: deploy/build/Dockerfile
+    image: ${EXPECTED_REF}

@@ -26,9 +26,13 @@ build:
 run: build
 	@wsl -e bin/spiracle
 
-.PHONY: image
+.PHONY: image image-ci
 image: build
-	@docker-compose -f deploy/build/docker-compose.yaml build spiracle
+	@DOCKER_BUILDKIT=1 docker-compose -f deploy/build/docker-compose.yaml build spiracle
+
+.PHONY: image-local
+image-local:
+	@docker-compose -f deploy/build/docker-compose.yaml build spiracle-local
 
 .PHONY: push
 push: crd build

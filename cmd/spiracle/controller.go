@@ -37,7 +37,10 @@ func init() {
 func controller(ctx context.Context, conf *config.Config) manager.Manager {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{})))
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	rest := ctrl.GetConfigOrDie()
+	rest.QPS = float32(10 * conf.Controller.Reconciler.Concurrency)
+	rest.Burst = 20 * conf.Controller.Reconciler.Concurrency
+	mgr, err := ctrl.NewManager(rest, ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     conf.Controller.MetricsAddr,
 		Port:                   conf.Controller.Port,
@@ -88,6 +91,7 @@ func reconcile(ctx context.Context, conf *config.Config, mgr manager.Manager) {
 		Log:        ctrl.Log,
 		TokenRepos: tokens,
 		ExternalRepos: externals,
+		Config: conf,
 	}
 	if err := reconciler.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RoomIngress")

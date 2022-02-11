@@ -14,6 +14,9 @@ roomproxy:
 controller:
   reconciler:
     enable: true
+    concurrency: 10
+    finalizer:
+      enable: false
   leaderelection:
     enable: true
     id: eed665e4.projectdavinci.com

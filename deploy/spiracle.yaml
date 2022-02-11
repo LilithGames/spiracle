@@ -19,7 +19,7 @@ spec:
       serviceAccount: spiracle
       containers:
         - name: spiracle
-          image: spiracle:latest
+          image: lilith-registry.cn-shanghai.cr.aliyuncs.com/avatar/hulucc/spiracle:latest
           imagePullPolicy: Never
           command: ["./spiracle", "-config", "/etc/spiracle/config.yaml"]
           env:

@@ -1,0 +1,1515 @@
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room1
+  namespace: default
+spec:
+  rooms:
+    - id: room1
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room2
+  namespace: default
+spec:
+  rooms:
+    - id: room2
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room3
+  namespace: default
+spec:
+  rooms:
+    - id: room3
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room4
+  namespace: default
+spec:
+  rooms:
+    - id: room4
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room5
+  namespace: default
+spec:
+  rooms:
+    - id: room5
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room6
+  namespace: default
+spec:
+  rooms:
+    - id: room6
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room7
+  namespace: default
+spec:
+  rooms:
+    - id: room7
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room8
+  namespace: default
+spec:
+  rooms:
+    - id: room8
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room9
+  namespace: default
+spec:
+  rooms:
+    - id: room9
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room10
+  namespace: default
+spec:
+  rooms:
+    - id: room10
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room11
+  namespace: default
+spec:
+  rooms:
+    - id: room11
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room12
+  namespace: default
+spec:
+  rooms:
+    - id: room12
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room13
+  namespace: default
+spec:
+  rooms:
+    - id: room13
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room14
+  namespace: default
+spec:
+  rooms:
+    - id: room14
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room15
+  namespace: default
+spec:
+  rooms:
+    - id: room15
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room16
+  namespace: default
+spec:
+  rooms:
+    - id: room16
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room17
+  namespace: default
+spec:
+  rooms:
+    - id: room17
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room18
+  namespace: default
+spec:
+  rooms:
+    - id: room18
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room19
+  namespace: default
+spec:
+  rooms:
+    - id: room19
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room20
+  namespace: default
+spec:
+  rooms:
+    - id: room20
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room21
+  namespace: default
+spec:
+  rooms:
+    - id: room21
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room22
+  namespace: default
+spec:
+  rooms:
+    - id: room22
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room23
+  namespace: default
+spec:
+  rooms:
+    - id: room23
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room24
+  namespace: default
+spec:
+  rooms:
+    - id: room24
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room25
+  namespace: default
+spec:
+  rooms:
+    - id: room25
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room26
+  namespace: default
+spec:
+  rooms:
+    - id: room26
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room27
+  namespace: default
+spec:
+  rooms:
+    - id: room27
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room28
+  namespace: default
+spec:
+  rooms:
+    - id: room28
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room29
+  namespace: default
+spec:
+  rooms:
+    - id: room29
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room30
+  namespace: default
+spec:
+  rooms:
+    - id: room30
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room31
+  namespace: default
+spec:
+  rooms:
+    - id: room31
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room32
+  namespace: default
+spec:
+  rooms:
+    - id: room32
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room33
+  namespace: default
+spec:
+  rooms:
+    - id: room33
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room34
+  namespace: default
+spec:
+  rooms:
+    - id: room34
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room35
+  namespace: default
+spec:
+  rooms:
+    - id: room35
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room36
+  namespace: default
+spec:
+  rooms:
+    - id: room36
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room37
+  namespace: default
+spec:
+  rooms:
+    - id: room37
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room38
+  namespace: default
+spec:
+  rooms:
+    - id: room38
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room39
+  namespace: default
+spec:
+  rooms:
+    - id: room39
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room40
+  namespace: default
+spec:
+  rooms:
+    - id: room40
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room41
+  namespace: default
+spec:
+  rooms:
+    - id: room41
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room42
+  namespace: default
+spec:
+  rooms:
+    - id: room42
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room43
+  namespace: default
+spec:
+  rooms:
+    - id: room43
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room44
+  namespace: default
+spec:
+  rooms:
+    - id: room44
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room45
+  namespace: default
+spec:
+  rooms:
+    - id: room45
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room46
+  namespace: default
+spec:
+  rooms:
+    - id: room46
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room47
+  namespace: default
+spec:
+  rooms:
+    - id: room47
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room48
+  namespace: default
+spec:
+  rooms:
+    - id: room48
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room49
+  namespace: default
+spec:
+  rooms:
+    - id: room49
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room50
+  namespace: default
+spec:
+  rooms:
+    - id: room50
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room51
+  namespace: default
+spec:
+  rooms:
+    - id: room51
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room52
+  namespace: default
+spec:
+  rooms:
+    - id: room52
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room53
+  namespace: default
+spec:
+  rooms:
+    - id: room53
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room54
+  namespace: default
+spec:
+  rooms:
+    - id: room54
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room55
+  namespace: default
+spec:
+  rooms:
+    - id: room55
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room56
+  namespace: default
+spec:
+  rooms:
+    - id: room56
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room57
+  namespace: default
+spec:
+  rooms:
+    - id: room57
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room58
+  namespace: default
+spec:
+  rooms:
+    - id: room58
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room59
+  namespace: default
+spec:
+  rooms:
+    - id: room59
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room60
+  namespace: default
+spec:
+  rooms:
+    - id: room60
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room61
+  namespace: default
+spec:
+  rooms:
+    - id: room61
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room62
+  namespace: default
+spec:
+  rooms:
+    - id: room62
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room63
+  namespace: default
+spec:
+  rooms:
+    - id: room63
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room64
+  namespace: default
+spec:
+  rooms:
+    - id: room64
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room65
+  namespace: default
+spec:
+  rooms:
+    - id: room65
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room66
+  namespace: default
+spec:
+  rooms:
+    - id: room66
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room67
+  namespace: default
+spec:
+  rooms:
+    - id: room67
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room68
+  namespace: default
+spec:
+  rooms:
+    - id: room68
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room69
+  namespace: default
+spec:
+  rooms:
+    - id: room69
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room70
+  namespace: default
+spec:
+  rooms:
+    - id: room70
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room71
+  namespace: default
+spec:
+  rooms:
+    - id: room71
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room72
+  namespace: default
+spec:
+  rooms:
+    - id: room72
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room73
+  namespace: default
+spec:
+  rooms:
+    - id: room73
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room74
+  namespace: default
+spec:
+  rooms:
+    - id: room74
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room75
+  namespace: default
+spec:
+  rooms:
+    - id: room75
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room76
+  namespace: default
+spec:
+  rooms:
+    - id: room76
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room77
+  namespace: default
+spec:
+  rooms:
+    - id: room77
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room78
+  namespace: default
+spec:
+  rooms:
+    - id: room78
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room79
+  namespace: default
+spec:
+  rooms:
+    - id: room79
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room80
+  namespace: default
+spec:
+  rooms:
+    - id: room80
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room81
+  namespace: default
+spec:
+  rooms:
+    - id: room81
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room82
+  namespace: default
+spec:
+  rooms:
+    - id: room82
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room83
+  namespace: default
+spec:
+  rooms:
+    - id: room83
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room84
+  namespace: default
+spec:
+  rooms:
+    - id: room84
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room85
+  namespace: default
+spec:
+  rooms:
+    - id: room85
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room86
+  namespace: default
+spec:
+  rooms:
+    - id: room86
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room87
+  namespace: default
+spec:
+  rooms:
+    - id: room87
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room88
+  namespace: default
+spec:
+  rooms:
+    - id: room88
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room89
+  namespace: default
+spec:
+  rooms:
+    - id: room89
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room90
+  namespace: default
+spec:
+  rooms:
+    - id: room90
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room91
+  namespace: default
+spec:
+  rooms:
+    - id: room91
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room92
+  namespace: default
+spec:
+  rooms:
+    - id: room92
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room93
+  namespace: default
+spec:
+  rooms:
+    - id: room93
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room94
+  namespace: default
+spec:
+  rooms:
+    - id: room94
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room95
+  namespace: default
+spec:
+  rooms:
+    - id: room95
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room96
+  namespace: default
+spec:
+  rooms:
+    - id: room96
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room97
+  namespace: default
+spec:
+  rooms:
+    - id: room97
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room98
+  namespace: default
+spec:
+  rooms:
+    - id: room98
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room99
+  namespace: default
+spec:
+  rooms:
+    - id: room99
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room100
+  namespace: default
+spec:
+  rooms:
+    - id: room100
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---
+apiVersion: projectdavinci.com/v1
+kind: RoomIngress
+metadata:
+  name: room101
+  namespace: default
+spec:
+  rooms:
+    - id: room101
+      server: local
+      upstream: 127.0.0.1:9200
+      players:
+        - id: player
+          token: 0
+
+---

@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/LilithGames/spiracle/repos"
+	"github.com/LilithGames/spiracle/config"
 )
 
 const FinalizerName = "projectdavinci.com/finalizer"
@@ -26,12 +27,28 @@ type RoomIngressReconciler struct {
 	Log           logr.Logger
 	TokenRepos    map[string]repos.TokenRepo
 	ExternalRepos repos.ExternelRepo
+	Config        *config.Config
 }
 
 func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := it.Log.WithValues("RoomIngress", req.NamespacedName)
-	log.Info("OnReconcile")
+	start := time.Now()
+	log.Info("OnReconcile begin")
+	r, err := it.reconcile(ctx, req)
+	log.Info("OnReconcile end", "duration", time.Since(start))
+	return r, err
+}
+
+func (it *RoomIngressReconciler) reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	log := it.Log.WithValues("RoomIngress", req.NamespacedName)
 	ring := &v1.RoomIngress{}
+	var curr *v1.RoomIngress
+	patch := func() *v1.RoomIngress {
+		if curr == nil {
+			curr = ring.DeepCopy()
+		}
+		return curr
+	}
 	if err := it.Get(ctx, req.NamespacedName, ring); err != nil {
 		if client.IgnoreNotFound(err) == nil {
 			log.Info("RoomIngress deleted")
@@ -39,27 +56,24 @@ func (it *RoomIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 		return ctrl.Result{}, fmt.Errorf("get err: %w", err)
 	}
-	if ring.ObjectMeta.DeletionTimestamp.IsZero() {
-		patch := ring.DeepCopy()
+	if ring.ObjectMeta.DeletionTimestamp.IsZero() && it.Config.Controller.Reconciler.Finalizer.Enable {
 		if !contains(ring.GetFinalizers(), FinalizerName) {
-			controllerutil.AddFinalizer(patch, FinalizerName)
-			if err := it.Patch(ctx, patch, client.MergeFrom(ring)); err != nil {
+			controllerutil.AddFinalizer(patch(), FinalizerName)
+			if err := it.Patch(ctx, patch(), client.MergeFrom(ring)); err != nil {
 				return ctrl.Result{}, fmt.Errorf("AddFinalizer update err: %w", err)
 			}
 		}
 	} else if contains(ring.GetFinalizers(), FinalizerName) {
 		log.Info("removing external resource")
-		patch := ring.DeepCopy()
-		controllerutil.RemoveFinalizer(patch, FinalizerName)
-		patch.Spec = v1.RoomIngressSpec{}
-		if err := it.Patch(ctx, patch, client.MergeFrom(ring)); err != nil {
+		controllerutil.RemoveFinalizer(patch(), FinalizerName)
+		patch().Spec = v1.RoomIngressSpec{}
+		if err := it.Patch(ctx, patch(), client.MergeFrom(ring)); err != nil {
 			return ctrl.Result{}, fmt.Errorf("RemoveFinalizer update err: %w", err)
 		}
 		return ctrl.Result{}, nil
 	}
-	patch := ring.DeepCopy()
-	if n, requeue := it.syncTokens(patch); n > 0 {
-		if err := it.Status().Patch(ctx, patch, client.MergeFrom(ring)); err != nil {
+	if n, requeue := it.syncTokens(patch()); n > 0 {
+		if err := it.Status().Patch(ctx, patch(), client.MergeFrom(ring)); err != nil {
 			return it.requeue(requeue), fmt.Errorf("update status err: %w", err)
 		}
 		return it.requeue(requeue), nil
@@ -153,7 +167,7 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 func (it *RoomIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	pred := predicate.GenerationChangedPredicate{}
 	opts := controller.Options{
-		MaxConcurrentReconciles: 1,
+		MaxConcurrentReconciles: it.Config.Controller.Reconciler.Concurrency,
 	}
 	return ctrl.NewControllerManagedBy(mgr).For(&v1.RoomIngress{}).WithEventFilter(pred).WithOptions(opts).Complete(it)
 }
