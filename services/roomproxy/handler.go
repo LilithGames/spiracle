@@ -3,6 +3,7 @@ package roomproxy
 import (
 	"errors"
 	"net"
+	"fmt"
 
 	"github.com/LilithGames/spiracle/proxy"
 	"github.com/LilithGames/spiracle/repos"
@@ -41,13 +42,13 @@ func (it *RoomProxy) kcptoken(ch byte, buffer []byte) (uint32, error) {
 	case 0x01:
 		token, err := it.kcp.GetToken(buffer[1:])
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("kcp.GetToken err: %w", err)
 		}
 		return token, nil
 	case 'x':
 		token, err := it.heartbeat.GetToken(buffer[1:])
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("heartbeat.GetToken err: %w", err)
 		}
 		return token, nil
 	default:
@@ -59,7 +60,7 @@ func (it *RoomProxy) dkcp(ch byte, m *proxy.UdpMsg) error {
 	token, err := it.kcptoken(ch, m.Buffer)
 	if err != nil {
 		// log
-		return err
+		return fmt.Errorf("kcptoken(%d) err: %w", ch, err)
 	}
 
 	src := m.Addr
@@ -71,14 +72,14 @@ func (it *RoomProxy) dkcp(ch byte, m *proxy.UdpMsg) error {
 			record, err := it.router.Get(token, repos.RouterScope(it.name))
 			if err != nil {
 				// log
-				return err
+				return fmt.Errorf("router.Get(%d, %s) err: %w", token, it.name, err)
 			}
 			dst = record.Addr
 			// warning
 			it.session.CreateOrUpdate(&repos.Session{Token: token, Src: src, Dst: dst}, repos.SessionScope(it.name), repos.SessionExpire(it.expire))
 		} else {
 			// warning
-			return err
+			return fmt.Errorf("session.Get(%d, %s) err: %w", token, it.name, err)
 		}
 	} else {
 		dst = s.Dst
@@ -90,11 +91,11 @@ func (it *RoomProxy) dkcp(ch byte, m *proxy.UdpMsg) error {
 func (it *RoomProxy) ukcp(ch byte, m *proxy.UdpMsg) error {
 	token, err := it.kcptoken(ch, m.Buffer)
 	if err != nil {
-		return err
+		return fmt.Errorf("kcptoken(%d) err: %w", ch, err)
 	}
 	s, err := it.session.Get(token, repos.SessionScope(it.name))
 	if err != nil {
-		return err
+		return fmt.Errorf("session.Get(%d, %s) err: %w", token, it.name, err)
 	}
 	m.Addr = s.Src
 	return nil
