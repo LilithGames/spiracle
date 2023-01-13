@@ -42,7 +42,7 @@ func (it *k8sRouterRepo) Get(token TToken, opts ...RouterOption) (*RouterRecord,
 		return nil, fmt.Errorf("k8s router repo get err: %w", err)
 	}
 	if len(rings.Items) == 0 {
-		return nil, ErrNotExists
+		return nil, fmt.Errorf("%w: ring not found", ErrNotExists)
 	}
 	if len(rings.Items) > 1 {
 		log.Println("[WARN] duplicated token: ", token)
@@ -66,7 +66,7 @@ func (it *k8sRouterRepo) Get(token TToken, opts ...RouterOption) (*RouterRecord,
 			}
 		}
 	}
-	return nil, ErrNotExists
+	return nil, fmt.Errorf("%w: ring: %s", ErrNotExists, ring.ObjectMeta.Name)
 }
 func (it *k8sRouterRepo) List(f func(*RouterRecord) bool, opts ...RouterOption) error {
 	return ErrNotSupported
