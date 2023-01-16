@@ -16,7 +16,7 @@ func Parser() protocol.FuncTokenParser {
 			return 0, errors.New("miss token delimiter")
 		}
 
-		s := string(data[1:index])
+		s := string(data[0:index])
 		token, err := strconv.Atoi(s)
 		if err != nil {
 			return 0, fmt.Errorf("parser token %w", err)
