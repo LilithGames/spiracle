@@ -18,6 +18,8 @@ func Parser() protocol.FuncMultiplexParser {
 			fallthrough
 		case 'e':
 			fallthrough
+		case 's':
+			fallthrough
 		case 'x':
 			return b, nil
 		default:

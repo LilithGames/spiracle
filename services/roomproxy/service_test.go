@@ -47,7 +47,7 @@ func client(t *testing.T) *net.UDPConn {
 
 func TestRoomProxyReal(t *testing.T) {
 	s := &proxy.Statd{}
-	go s.Tick(nil)
+	go s.Tick(func(s *proxy.Statd){})
 	ctx := proxy.WithStatd(context.TODO(), s)
 	name := "server1"
 	roomproxy, err := NewRoomProxy(ctx, name)

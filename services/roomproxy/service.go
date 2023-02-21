@@ -2,13 +2,14 @@ package roomproxy
 
 import (
 	"context"
-	"time"
 	"log"
+	"time"
 
 	"github.com/LilithGames/spiracle/protocol"
 	"github.com/LilithGames/spiracle/protocol/heartbeat"
 	"github.com/LilithGames/spiracle/protocol/kcp"
 	"github.com/LilithGames/spiracle/protocol/multiplex"
+	"github.com/LilithGames/spiracle/protocol/skcp"
 	"github.com/LilithGames/spiracle/proxy"
 	"github.com/LilithGames/spiracle/repos"
 )
@@ -19,6 +20,7 @@ type RoomProxy struct {
 	name      string
 	multiplex protocol.MultiplexParser
 	kcp       protocol.TokenParser
+	skcp      protocol.TokenParser
 	heartbeat protocol.TokenParser
 }
 
@@ -47,6 +49,7 @@ func NewRoomProxy(ctx context.Context, name string, opts ...RoomProxyOption) (*R
 		name:             name,
 		multiplex:        protocol.NewFuncMultiplexParser(multiplex.Parser()),
 		kcp:              protocol.NewFuncTokenParser(kcp.Parser()),
+		skcp:             protocol.NewFuncTokenParser(skcp.Parser()),
 		heartbeat:        protocol.NewFuncTokenParser(heartbeat.Parser()),
 	}
 	return rp, nil

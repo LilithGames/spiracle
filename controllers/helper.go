@@ -77,6 +77,7 @@ const DiffNew = "New"
 const DiffUpdated = "Updated"
 const DiffDeleted = "Deleted"
 const DiffUnchanged = "Unchanged"
+const DiffRoomUpdated = "RoomUpdated"
 
 type RoomKey struct {
 	ServerId string
@@ -174,11 +175,7 @@ func DiffRoomStatus(past *v1.RoomIngressStatus, curr *v1.RoomIngressStatus, opts
 			diff.Type = DiffNew
 			diff.Current = c
 		} else if cok && pok {
-			if o.uh(past, p, curr, c) {
-				diff.Type = DiffUpdated
-			} else {
-				diff.Type = DiffUnchanged
-			}
+			diff.Type = o.uh(past, p, curr, c)
 			diff.Current = c
 			diff.Past = p
 		} else if !cok && pok {
@@ -193,23 +190,29 @@ func DiffRoomStatus(past *v1.RoomIngressStatus, curr *v1.RoomIngressStatus, opts
 }
 
 func TokenUpdatedHandler() UpdatedHandler {
-	return func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) bool {
+	return func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) DiffType {
 		p := GetPlayerStatusByPos(past, pp)
 		c := GetPlayerStatusByPos(curr, cp)
 		if c.Player.Status == v1.PlayerStatusRetry {
-			return true
+			return DiffUpdated
 		}
-		return p.Player.Token != c.Player.Token
+		if p.Room.Upstream != c.Room.Upstream {
+			return DiffRoomUpdated
+		}
+		if p.Player.Token != c.Player.Token {
+			return DiffUpdated
+		}
+		return DiffUnchanged
 	}
 }
 
 func AlwaysUpdatedHandler() UpdatedHandler {
-	return func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) bool {
-		return true
+	return func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) DiffType {
+		return DiffUpdated
 	}
 }
 
-type UpdatedHandler func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) bool
+type UpdatedHandler func(past *v1.RoomIngressStatus, pp PlayerPos, curr *v1.RoomIngressStatus, cp PlayerPos) DiffType
 
 type diffOptions struct {
 	uh UpdatedHandler

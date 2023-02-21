@@ -93,4 +93,13 @@ func TestRoomIngressController(t *testing.T) {
 	p4 = GetPlayerStatusByKey(&ring1.Status, PlayerKey{RoomKey: room11, PlayerId: "player4"})
 	assert.Equal(t, v1.PlayerStatusExpired, p1.Player.Status)
 	assert.Nil(t, p4)
+
+	ring1.Spec.Rooms[0].Upstream = "127.0.0.2:4321"
+	n, u = rec.syncTokens(ring1)
+	assert.Equal(t, 3, n)
+	// _ = n
+	assert.Equal(t, "127.0.0.2:4321", ring1.Status.Rooms[0].Upstream)
+
+	n, _ = rec.syncTokens(ring1)
+	assert.Equal(t, 0, n)
 }
