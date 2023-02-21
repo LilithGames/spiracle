@@ -145,6 +145,9 @@ func (it *RoomIngressReconciler) syncTokens(ring *v1.RoomIngress) (int, *time.Du
 				}
 			}
 		}
+		if diff.Type == DiffRoomUpdated {
+			n++
+		}
 	}
 	ring.Status = *curr
 	return n, min(requeue)

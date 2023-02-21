@@ -31,6 +31,8 @@ func (it *RoomProxy) multiplexing(buffer []byte) proxyHandler {
 		return proxyHandler{ch: ch, u: it.ukcp, d: it.dkcp}
 	case 'e':
 		return proxyHandler{ch: ch, u: it.uecho, d: it.decho}
+	case 's':
+		return proxyHandler{ch: ch, u: it.ukcp, d: it.dkcp}
 	default:
 		return proxyHandler{ch: ch, u: it.drop, d: it.drop}
 	}
@@ -49,6 +51,12 @@ func (it *RoomProxy) kcptoken(ch byte, buffer []byte) (uint32, error) {
 		token, err := it.heartbeat.GetToken(buffer[1:])
 		if err != nil {
 			return 0, fmt.Errorf("heartbeat.GetToken err: %w", err)
+		}
+		return token, nil
+	case 's':
+		token, err := it.skcp.GetToken(buffer[1:])
+		if err != nil {
+			return 0, fmt.Errorf("skcp.GetToken err: %w", err)
 		}
 		return token, nil
 	default:
