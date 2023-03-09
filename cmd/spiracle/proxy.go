@@ -2,20 +2,19 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
-	"fmt"
 	"time"
 
-	manager "sigs.k8s.io/controller-runtime/pkg/manager"
-	"github.com/buraksezer/olric"
-	"github.com/LilithGames/spiracle/proxy"
-	"github.com/LilithGames/spiracle/services/roomproxy"
-	"github.com/LilithGames/spiracle/repos"
 	"github.com/LilithGames/spiracle/config"
+	"github.com/LilithGames/spiracle/proxy"
+	"github.com/LilithGames/spiracle/repos"
+	"github.com/LilithGames/spiracle/services/roomproxy"
+	manager "sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, db *olric.Olric, mgr manager.Manager) {
+func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, mgr manager.Manager) {
 	defer wg.Done()
 	s := &proxy.Statd{}
 	var th proxy.TickHandler
@@ -25,10 +24,10 @@ func spiracle(ctx context.Context, conf *config.Config, wg *sync.WaitGroup, db *
 	go s.Tick(th)
 	// maxproc
 	ctx = proxy.WithStatd(ctx, s)
-	sessions, err := repos.NewSessionRepo(db)
-	if err != nil {
-		log.Fatalln("create session repo err", err)
-	}
+	sessions := repos.NewMemorySessionRepo()
+	// if err != nil {
+	// log.Fatalln("create session repo err", err)
+	// }
 	routers := repos.NewK8sRouterRepo(mgr.GetClient())
 	for _, s := range conf.RoomProxy.Servers {
 		rp, err := roomproxy.NewRoomProxy(ctx, s.Name, roomproxy.RoomProxySessionRepo(sessions), roomproxy.RoomProxyRouterRepo(routers), roomproxy.RoomProxyDebug(conf.RoomProxy.Debug), roomproxy.RoomProxyExpire(time.Duration(conf.RoomProxy.Session.Expire)*time.Second))

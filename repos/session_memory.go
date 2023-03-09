@@ -1,16 +1,13 @@
 package repos
 
-import (
-	"sync"
-)
-
 type memorySessionRepo struct {
-	dict *sync.Map
+	// dict *sync.Map
+	dict *ConcurrentMap[*Session]
 }
 
 func NewMemorySessionRepo() SessionRepo {
 	return &memorySessionRepo{
-		dict: &sync.Map{},
+		dict: NewConcurrentMap[*Session](),
 	}
 }
 func (it *memorySessionRepo) key(scope string, token string) string {
@@ -20,9 +17,10 @@ func (it *memorySessionRepo) key(scope string, token string) string {
 func (it *memorySessionRepo) Create(session *Session, opts ...SessionOption) error {
 	o := getSessionOptions(opts...)
 	key := it.key(o.scope, str(session.Token))
-	_, loaded := it.dict.LoadOrStore(key, session)
-	if loaded {
-		return ErrAlreadyExists
+	if o.expire == nil {
+		it.dict.Set(key, session, 0)
+	} else {
+		it.dict.Set(key, session, *o.expire)
 	}
 	return nil
 }
@@ -32,7 +30,11 @@ func (it *memorySessionRepo) Update(session *Session, opts ...SessionOption) err
 func (it *memorySessionRepo) CreateOrUpdate(session *Session, opts ...SessionOption) error {
 	o := getSessionOptions(opts...)
 	key := it.key(o.scope, str(session.Token))
-	it.dict.Store(key, session)
+	if o.expire == nil {
+		it.dict.Set(key, session, 0)
+	} else {
+		it.dict.Set(key, session, *o.expire)
+	}
 	return nil
 }
 func (it *memorySessionRepo) Delete(id TToken, opts ...SessionOption) error {
@@ -44,10 +46,9 @@ func (it *memorySessionRepo) Delete(id TToken, opts ...SessionOption) error {
 func (it *memorySessionRepo) Get(id TToken, opts ...SessionOption) (*Session, error) {
 	o := getSessionOptions(opts...)
 	key := it.key(o.scope, str(id))
-	value, ok := it.dict.Load(key)
+	session, ok := it.dict.Get(key)
 	if !ok {
 		return nil, ErrNotExists
 	}
-	return value.(*Session), nil
+	return session, nil
 }
-
